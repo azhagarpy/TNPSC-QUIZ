@@ -35,6 +35,9 @@ export async function rpc<T>(fn: string, args: Record<string, unknown> = {}): Pr
 
 export const api = {
   homeSummary: () => rpc<HomeSummary>('home_summary'),
+  usernameAvailable: (username: string) => rpc<boolean>('username_available', { p_username: username }),
+  /** Email for a username, only if the password is right (null otherwise). */
+  resolveLogin: (login: string, password: string) => rpc<string | null>('resolve_login', { p_login: login, p_password: password }),
   completeOnboarding: (a: {
     username: string; name: string; district: string; examYear: number; language: string; referrer?: string | null;
   }) =>

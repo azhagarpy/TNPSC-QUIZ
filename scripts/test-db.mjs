@@ -5,13 +5,14 @@
 //
 //   npm run test:db
 import { PGlite } from '@electric-sql/pglite';
+import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
-const db = new PGlite();
+const db = new PGlite({ extensions: { pgcrypto } });
 let passed = 0;
 
 const fail = (e) => {
@@ -43,7 +44,10 @@ await db.exec(`
 
   create schema auth;
   grant usage on schema auth to anon, authenticated;
-  create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb);
+  create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb,
+    encrypted_password text, updated_at timestamptz);
+  create schema extensions;
+  create extension pgcrypto schema extensions;
   create function auth.uid() returns uuid language sql stable as
     $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant execute on function auth.uid() to anon, authenticated;
@@ -752,6 +756,59 @@ const give = (u, amount) => sql(`select app_private.post_coins($1, $2, 'test')`,
   assert.equal((await sql(`select app_private.cron_streak_reminders() as n`))[0].n, 1);
   await sql(`select app_private.cron_minutely_phase2()`);
   ok('web push: subscriptions, friend-request push, service-role-only claim, streak reminders');
+}
+
+// ---------------------------------------------------------------------------
+// Email + password accounts, sign in with username or email
+// ---------------------------------------------------------------------------
+async function asAnon(text, params = []) {
+  await db.exec(`set role anon`);
+  try {
+    return (await db.query(text, params)).rows;
+  } finally {
+    await db.exec(`reset role`);
+  }
+}
+async function anonError(text, params = []) {
+  try {
+    await asAnon(text, params);
+  } catch (e) {
+    return e.message;
+  }
+  return null;
+}
+{
+  const K = randomUUID();
+  await sql(`insert into auth.users (id, email, raw_user_meta_data, encrypted_password)
+             values ($1, 'Kavya@Example.com', '{"username":"Kavya_01"}', extensions.crypt('secret123', extensions.gen_salt('bf')))`, [K]);
+  const [{ username }] = await sql(`select username from public.profiles where id = $1`, [K]);
+  assert.equal(username, 'kavya_01', 'username from registration is saved');
+  const dup = randomUUID();
+  await sql(`insert into auth.users (id, email, raw_user_meta_data) values ($1, 'dup@example.com', '{"username":"kavya_01"}')`, [dup]);
+  assert.equal((await sql(`select username from public.profiles where id = $1`, [dup]))[0].username, null, 'taken username is not reused');
+
+  const avail = (u) => asAnon(`select public.username_available($1) as ok`, [u]).then((r) => r[0].ok);
+  assert.equal(await avail('kavya_01'), false);
+  assert.equal(await avail('newname'), true);
+  assert.equal(await avail('Bad name!'), false);
+
+  const login = (l, pw) => asAnon(`select public.resolve_login($1, $2) as email`, [l, pw]).then((r) => r[0].email);
+  assert.equal(await login('KAVYA_01', 'secret123'), 'Kavya@Example.com', 'username → email after the password checks out');
+  assert.equal(await login('kavya@example.com', 'secret123'), 'Kavya@Example.com', 'email works too');
+  assert.equal(await login('kavya_01', 'wrong-pass'), null, 'wrong password: no email');
+  assert.equal(await login('nobody_here', 'secret123'), null, 'unknown login looks the same');
+  await assert.rejects(asAnon(`select public.home_summary()`), /permission denied/, 'other functions stay closed to anon');
+
+  for (let i = 0; i < 10; i++) await anonError(`select public.resolve_login('kavya_01', 'guess${i}')`);
+  assert.equal(await anonError(`select public.resolve_login('kavya_01', 'secret123')`), 'too_many_attempts', 'rate-limited after 10 failures');
+
+  assert.equal(await rpcError(A, 'admin_reset_password', { p_username: 'kavya_01', p_password: 'short' }), 'weak_password');
+  await rpc(A, 'admin_reset_password', { p_username: 'kavya_01', p_password: 'newpass-2026' });
+  assert.equal(await login('kavya_01', 'newpass-2026'), 'Kavya@Example.com', 'admin reset works and clears the lockout');
+  const N = await newUser('nila');
+  await onboard(N, 'nila');
+  assert.equal(await rpcError(N, 'admin_reset_password', { p_username: 'kavya_01', p_password: 'x'.repeat(10) }), 'admin_only');
+  ok('password accounts: username at sign-up, login by username or email, rate limit, admin reset');
 }
 
 // ---------------------------------------------------------------------------

@@ -31,6 +31,7 @@ export default function Profile() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [pushOn, setPushOn] = useState(false);
   const owned = useOwnedItems();
 
@@ -299,6 +300,9 @@ export default function Profile() {
           </p>
           {!isDemo && (
             <>
+              <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
+                🔑 {t('profile.changePassword')}
+              </Button>
               <Button variant="ghost" onClick={() => void signOut()}>
                 {t('profile.signOut')}
               </Button>
@@ -330,6 +334,7 @@ export default function Profile() {
       </Sheet>
       <EditSheet open={editOpen} onClose={() => setEditOpen(false)} onSave={update} />
       <DeleteSheet open={deleteOpen} onClose={() => setDeleteOpen(false)} onDeleted={signOut} />
+      <PasswordSheet open={passwordOpen} onClose={() => setPasswordOpen(false)} />
     </Screen>
   );
 }
@@ -381,6 +386,39 @@ function EditSheet({ open, onClose, onSave }: { open: boolean; onClose: () => vo
           {t('common.save')}
         </Button>
       </div>
+    </Sheet>
+  );
+}
+
+function PasswordSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  return (
+    <Sheet open={open} onClose={onClose} title={t('profile.changePassword')}>
+      <Field label={t('profile.newPassword')}>
+        <input type="password" autoComplete="new-password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} />
+      </Field>
+      <Button
+        block
+        className="mt-3"
+        disabled={password.length < 8}
+        loading={busy}
+        onClick={async () => {
+          setBusy(true);
+          const { error } = await (await sb()).auth.updateUser({ password });
+          setBusy(false);
+          if (error) toast(error.message, 'bad');
+          else {
+            toast(t('profile.passwordChanged'), 'ok');
+            setPassword('');
+            onClose();
+          }
+        }}
+      >
+        {t('common.save')}
+      </Button>
     </Sheet>
   );
 }

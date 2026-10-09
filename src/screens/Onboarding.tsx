@@ -14,7 +14,7 @@ export default function Onboarding() {
   const year = new Date().getFullYear();
   const [name, setName] = useState(profile?.display_name ?? '');
   const [username, setUsername] = useState(
-    () => ((profile?.display_name ?? '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 14) || 'aspirant') + Math.floor(Math.random() * 90 + 10),
+    () => profile?.username ?? ((profile?.display_name ?? '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 14) || 'aspirant') + Math.floor(Math.random() * 90 + 10),
   );
   const [district, setDistrict] = useState('');
   const [examYear, setExamYear] = useState(year + 1);

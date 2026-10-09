@@ -579,6 +579,7 @@ function Moderation() {
           ))}
         </div>
       </Card>
+      <ResetPassword />
       <Card className="space-y-2">
         <h3 className="font-bold">Collusion flags (stakes frozen until reviewed)</h3>
         {flags.data?.length === 0 && <p className="text-sm text-muted">None.</p>}
@@ -597,5 +598,47 @@ function Moderation() {
         ))}
       </Card>
     </div>
+  );
+}
+
+/** No reset emails in this app: an admin sets a temporary password, the player changes it in Profile. */
+function ResetPassword() {
+  const toast = useToast();
+  const { errorText } = useI18n();
+  const [username, setUsername] = useState('');
+  const [temp, setTemp] = useState('');
+  const [busy, setBusy] = useState(false);
+  return (
+    <Card className="space-y-3">
+      <h3 className="font-bold">Reset a player's password</h3>
+      <p className="text-sm text-muted">Check it is really them first (e.g. a message from their known phone). Give them the temporary password; they change it in Profile.</p>
+      <div className="flex gap-2">
+        <input className={inputClass} placeholder="username" value={username} autoCapitalize="none" onChange={(e) => setUsername(e.target.value.toLowerCase())} />
+        <Button
+          size="sm"
+          disabled={username.length < 3}
+          loading={busy}
+          onClick={async () => {
+            const pw = Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
+            setBusy(true);
+            try {
+              await rpc('admin_reset_password', { p_username: username, p_password: pw });
+              setTemp(pw);
+            } catch (e) {
+              toast(errorText(e), 'bad');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+      {temp && (
+        <p className="rounded-xl bg-surface-2 p-3 text-sm">
+          Temporary password for @{username}: <span className="font-mono text-lg font-bold">{temp}</span>
+        </p>
+      )}
+    </Card>
   );
 }

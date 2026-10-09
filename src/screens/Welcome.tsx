@@ -1,17 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { isDemo, sb } from '../lib/supabase';
 import { Link } from '../lib/router';
-import { Button, Field, inputClass } from '../components/ui';
+import { Button, Field, cx, inputClass } from '../components/ui';
 
-// Screens 1–2: language pick, then email sign-in (magic link or 6-digit code).
+const USERNAME = /^[a-z0-9_]{3,20}$/;
+
+// Screens 1–2: language pick, then an account: register with username, email
+// and password; sign in again with username or email plus password.
 export default function Welcome() {
-  const { t, lang, setLang, chosen } = useI18n();
+  const { t, lang, setLang, chosen, errorText } = useI18n();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signup');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [code, setCode] = useState('');
-  const [busy, setBusy] = useState<'email' | 'code' | null>(null);
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
+  const [available, setAvailable] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+
+  // Live username check while registering.
+  useEffect(() => {
+    setAvailable(null);
+    if (mode !== 'signup' || !USERNAME.test(username)) return;
+    const id = setTimeout(() => {
+      api.usernameAvailable(username).then(setAvailable).catch(() => setAvailable(null));
+    }, 400);
+    return () => clearTimeout(id);
+  }, [username, mode]);
 
   if (!chosen || isDemo) {
     return (
@@ -34,24 +53,81 @@ export default function Welcome() {
     );
   }
 
-  const sendLink = async () => {
-    setBusy('email');
+  // Supabase Auth messages → our wording.
+  const authError = (message: string) =>
+    /already registered|already been registered/i.test(message)
+      ? t('welcome.emailTaken')
+      : /invalid login|invalid credentials/i.test(message)
+        ? t('welcome.wrongLogin')
+        : /not confirmed/i.test(message)
+          ? t('welcome.confirmOn')
+          : /password/i.test(message)
+            ? t('welcome.weakPassword')
+            : message;
+
+  const signUp = async () => {
+    setBusy(true);
     setError('');
-    const { error } = await (await sb()).auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: window.location.origin } });
-    setBusy(null);
-    if (error) setError(error.message);
-    else setSent(true);
+    setInfo('');
+    try {
+      const client = await sb();
+      const { data, error } = await client.auth.signUp({ email: email.trim(), password, options: { data: { username } } });
+      if (error) setError(authError(error.message));
+      else if (!data.session) setInfo(t('welcome.confirmOn')); // "Confirm email" is still on in Supabase
+      // With a session, the app moves on to the profile step by itself.
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
-  // The email carries a 6-digit code as well as the link: typing the code works
-  // inside an installed app, where tapping the link would open the browser instead.
-  const verifyCode = async () => {
-    setBusy('code');
+  const signIn = async () => {
+    setBusy(true);
     setError('');
-    const { error } = await (await sb()).auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' });
-    setBusy(null);
-    if (error) setError(t('welcome.badCode'));
+    setInfo('');
+    try {
+      const value = login.trim();
+      // Usernames are turned into the account email only after the password checks out.
+      const mail = value.includes('@') ? value : await api.resolveLogin(value, password);
+      if (!mail) {
+        setError(t('welcome.wrongLogin'));
+        return;
+      }
+      const { error } = await (await sb()).auth.signInWithPassword({ email: mail, password });
+      if (error) setError(authError(error.message));
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const passwordInput = (
+    <Field label={t('welcome.password')} hint={mode === 'signup' ? t('welcome.passwordHint') : undefined}>
+      <div className="relative">
+        <input
+          type={show ? 'text' : 'password'}
+          required
+          minLength={mode === 'signup' ? 8 : undefined}
+          autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+          className={cx(inputClass, 'pr-16')}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          className="absolute inset-y-0 right-2 my-auto h-9 rounded-xl px-2 text-sm font-semibold text-accent"
+          onClick={() => setShow((s) => !s)}
+        >
+          {show ? t('welcome.hide') : t('welcome.show')}
+        </button>
+      </div>
+    </Field>
+  );
+
+  const canSignUp = USERNAME.test(username) && available !== false && email.includes('@') && password.length >= 8;
+  const canSignIn = login.trim().length >= 3 && password.length > 0;
 
   return (
     <div className="safe-top mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-8">
@@ -60,75 +136,114 @@ export default function Welcome() {
           {lang === 'ta' ? 'English' : 'தமிழ்'}
         </button>
       </div>
-      <div className="mt-6 flex flex-col items-center text-center">
-        <img src="/logo.svg" alt="" width={80} height={80} className="rounded-3xl shadow-card" />
-        <h1 className="mt-4 text-2xl font-black">{t('app.name')}</h1>
+      <div className="mt-4 flex flex-col items-center text-center">
+        <img src="/logo.svg" alt="" width={72} height={72} className="rounded-3xl shadow-card" />
+        <h1 className="mt-3 text-2xl font-black">{t('app.name')}</h1>
         <p className="text-muted">{t('app.tagline')}</p>
       </div>
-      <ul className="mt-6 space-y-2">
-        {(['welcome.p1', 'welcome.p2', 'welcome.p3'] as const).map((k, i) => (
-          <li key={k} className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card">
-            <span className="text-2xl" aria-hidden>
-              {['🪙', '⚔️', '📚'][i]}
-            </span>
-            <span className="font-semibold">{t(k)}</span>
-          </li>
-        ))}
-      </ul>
+      {mode === 'signup' && (
+        <ul className="mt-5 space-y-2">
+          {(['welcome.p1', 'welcome.p2', 'welcome.p3'] as const).map((k, i) => (
+            <li key={k} className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card">
+              <span className="text-2xl" aria-hidden>
+                {['🪙', '⚔️', '📚'][i]}
+              </span>
+              <span className="font-semibold">{t(k)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <div className="mt-auto space-y-3 pt-8">
-        {sent ? (
-          <form
-            className="space-y-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void verifyCode();
-            }}
-          >
-            <p className="rounded-2xl bg-ok-bg p-4 text-sm font-semibold">{t('welcome.linkSent', { email })}</p>
-            <Field label={t('welcome.code')}>
-              <input
-                className={`${inputClass} text-center font-mono text-2xl tracking-[0.4em]`}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              />
-            </Field>
-            <Button block type="submit" loading={busy === 'code'} disabled={code.length !== 6}>
-              {t('welcome.verify')}
-            </Button>
-            <button type="button" className="w-full text-sm text-muted underline" onClick={() => { setSent(false); setCode(''); }}>
-              {t('welcome.changeEmail')}
+      <div className="mt-auto space-y-3 pt-6">
+        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-surface-2 p-1" role="tablist">
+          {(['signup', 'signin'] as const).map((m) => (
+            <button
+              key={m}
+              role="tab"
+              aria-selected={mode === m}
+              className={cx('min-h-11 rounded-xl px-2 text-sm font-bold', mode === m ? 'bg-surface text-brand shadow-card' : 'text-muted')}
+              onClick={() => {
+                setMode(m);
+                setError('');
+                setInfo('');
+              }}
+            >
+              {m === 'signup' ? t('welcome.signup') : t('welcome.signin')}
             </button>
-          </form>
-        ) : (
-          <form
-            className="space-y-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void sendLink();
-            }}
-          >
-            <Field label={t('welcome.email')}>
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                inputMode="email"
-                className={inputClass}
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Field>
-            <Button block type="submit" loading={busy === 'email'} disabled={!email.includes('@')}>
-              {t('welcome.email')}
-            </Button>
-          </form>
-        )}
-        {error && <p className="text-sm text-bad">{error}</p>}
+          ))}
+        </div>
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void (mode === 'signup' ? signUp() : signIn());
+          }}
+        >
+          {mode === 'signup' ? (
+            <>
+              <Field
+                label={t('onb.username')}
+                hint={
+                  available === false ? (
+                    <span className="text-bad">{t('err.username_taken')}</span>
+                  ) : available ? (
+                    <span className="text-ok">✓ {t('welcome.usernameFree')}</span>
+                  ) : (
+                    t('onb.usernameHint')
+                  )
+                }
+              >
+                <input
+                  className={inputClass}
+                  value={username}
+                  maxLength={20}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="username"
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                />
+              </Field>
+              <Field label={t('welcome.emailLabel')}>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  inputMode="email"
+                  className={inputClass}
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Field>
+              {passwordInput}
+              <Button block size="lg" type="submit" loading={busy} disabled={!canSignUp}>
+                {t('welcome.createAccount')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Field label={t('welcome.loginLabel')}>
+                <input
+                  className={inputClass}
+                  value={login}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="username"
+                  onChange={(e) => setLogin(e.target.value)}
+                />
+              </Field>
+              {passwordInput}
+              <Button block size="lg" type="submit" loading={busy} disabled={!canSignIn}>
+                {t('welcome.signin')}
+              </Button>
+              <p className="text-center text-xs text-muted">{t('welcome.forgot')}</p>
+            </>
+          )}
+        </form>
+        {error && <p className="text-sm font-semibold text-bad">{error}</p>}
+        {info && <p className="rounded-2xl bg-accent-bg p-3 text-sm">{info}</p>}
         <p className="pt-2 text-center text-xs text-muted">{t('welcome.free')}</p>
         <p className="text-center text-xs text-muted">
           {t('welcome.legal')}{' '}

@@ -18,10 +18,9 @@ Without Supabase keys the app runs in **demo mode**: language pick, home, solo p
 1. **Create a project** at supabase.com. The plan prefers the **Mumbai (ap-south-1)** region; set `VITE_DATA_REGION` to whatever you chose so the Privacy page is accurate.
 2. **Keys**: copy `.env.example` to `.env.local` and fill in `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the publishable key), `VITE_CONTACT_EMAIL`, `VITE_DATA_REGION`, and `SUPABASE_DB_URL` (Dashboard → Connect → **Session pooler** string; the direct one is IPv6-only). `SUPABASE_DB_URL` never reaches the browser.
 3. **Apply the database**: `npm run db:apply`. It runs every pending migration in one transaction (and the sample questions on the first run), recording them in the same table the Supabase CLI uses. Re-run it after pulling new migrations. Alternative without a DB password: `npm run setup-sql` and paste `supabase/setup.sql` into the SQL Editor once.
-4. **Sign-in is email only** (no Google, no SMS). In Authentication:
-   - **Custom SMTP is required for real players** (Authentication → Emails → SMTP). Supabase's built-in sender is for testing only and heavily rate-limited.
-   - Email template **Magic Link**: include the code, e.g. `<p>Your code: {{ .Token }}</p>`, next to the link. Players can type the 6-digit code, which is what works inside an installed app (on iPhone a tapped link opens Safari instead).
-   - URL configuration: Site URL = your Vercel address; add `http://localhost:5173` to Redirect URLs.
+4. **Sign-in: username + email + password** (no email links, no Google, no SMS). Players register with a username, email and password, and sign in with their username *or* email plus password. In Authentication → Sign In / Providers → **Email**: keep it enabled and turn **Confirm email OFF** (the app sends no emails, so no SMTP is needed). URL configuration: Site URL = your Vercel address.
+   - Forgotten password: there is no reset email. An admin sets a temporary password (Admin → Moderation → Reset a player's password) and the player changes it in Profile → Change password.
+   - Username sign-in goes through `resolve_login`, which returns the account email only for the correct password and locks a login for 15 minutes after 10 failures, so it cannot be used to collect emails or guess passwords.
 5. **Realtime** (Realtime → Settings): turn off **Allow public access**. The app uses private channels only.
 6. **Make yourself admin** after signing in once:
    ```sql
@@ -105,7 +104,7 @@ npm run e2e:live # against your real Supabase project (needs SUPABASE_DB_URL)
 
 ## Where this differs from the plan
 
-- **Email-only sign-in** (magic link or 6-digit code). No Google, no SMS.
+- **Password accounts** (username + email + password; sign in with username or email). No Google, no SMS, no email links, so no email sending at all.
 - **Game logic in Postgres functions**, not Edge Functions; the only Edge Function sends web push.
 - **No Redis.** "Seen" history is an indexed Postgres table; enough at this scale.
 - **Quota rounding** inside a part is weighted-random on the remainders, so small units still appear in 10-question matches.
@@ -123,6 +122,6 @@ The ML profanity classifier (the word list is in place), current-affairs content
 - Get the written opinion from a gaming-law advocate that the plan calls for, and register with the Online Gaming Authority if the Rules require it.
 - Have the Terms and Privacy pages (`src/screens/Legal.tsx`) reviewed; set `VITE_CONTACT_EMAIL`.
 - Move the sample questions into review and reach the 3,000-question target.
-- Configure custom SMTP and add `{{ .Token }}` to the Magic Link email template.
+- If you later want self-service password reset, add custom SMTP and a "Forgot password" email flow.
 - Add Tamil and Tanglish words to the profanity list (Admin → Moderation).
 - Update `next_exam_date` in Admin → Settings when TNPSC announces the 2027 exam.

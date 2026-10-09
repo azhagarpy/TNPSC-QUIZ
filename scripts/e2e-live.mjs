@@ -47,7 +47,7 @@ async function createUser(name) {
   const client = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
   const { error } = await client.auth.signInWithPassword({ email, password });
   if (error) throw new Error(`sign-in failed for ${email}: ${error.message}`);
-  return { id, email, client };
+  return { id, email, password, client };
 }
 
 async function rpc(user, fn, args = {}) {
@@ -98,6 +98,16 @@ try {
     assert.equal(bonus.coins, 500);
   }
   step('onboarding + 500 starter coins via RPC');
+
+  // Sign in again by username: the helper returns the email only for the right password.
+  const fresh = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+  const { data: viaUsername } = await fresh.rpc('resolve_login', { p_login: `e2e_arun_${tag}`, p_password: A.password });
+  assert.equal(viaUsername?.toLowerCase(), A.email.toLowerCase());
+  const { data: wrong } = await fresh.rpc('resolve_login', { p_login: `e2e_arun_${tag}`, p_password: 'not-the-password' });
+  assert.equal(wrong, null);
+  const { error: signInError } = await fresh.auth.signInWithPassword({ email: viaUsername, password: A.password });
+  assert.equal(signInError, null);
+  step('signed in again with username + password (email revealed only for the right password)');
 
   const { data: hidden } = await A.client.from('questions').select('id').limit(1);
   assert.deepEqual(hidden, [], 'questions hidden from players');
