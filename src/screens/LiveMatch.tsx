@@ -9,7 +9,7 @@ import { useSession } from '../lib/session';
 import type { MatchPlayer, MatchSync } from '../lib/types';
 import { Explanation, Options, QuestionText, TimerRing, useQuestionLang } from '../components/question';
 import { FloatingEmoji, PhraseBar, ReactionBar, type ChatItem } from '../components/chat';
-import { Avatar, Button, Coin, Loading, Screen, cx, useToast } from '../components/ui';
+import { Avatar, Button, Coin, Loading, RankBadge, Ribbon, Screen, cx, useToast } from '../components/ui';
 import { useRoomChat } from './Lobby';
 import { useRoomCosmetics } from '../lib/cosmeticsHook';
 
@@ -161,17 +161,17 @@ export default function LiveMatch({ params }: { params: Record<string, string> }
       title={sync.index !== null && sync.phase !== 'starting' ? t('play.question', { i: sync.index + 1, n: sync.n }) : t('match.starting')}
       right={
         sync.stake > 0 ? (
-          <span className="mr-2 inline-flex items-center gap-1 text-sm font-bold">
-            <Coin /> {sync.stake * sync.players.length}
+          <span className="hud-pill">
+            <Coin size={24} /> {sync.stake * sync.players.length}
           </span>
         ) : undefined
       }
     >
       <div className="flex min-h-[calc(100dvh-6rem)] flex-col gap-3">
-        {!online && <p className="rounded-xl bg-bad-bg px-3 py-2 text-center text-sm font-semibold">{t('match.reconnecting')}</p>}
+        {!online && <p className="glass !border-[var(--red)] px-3 py-2 text-center text-sm font-semibold">📶 {t('match.reconnecting')}</p>}
 
         {/* Live strip: who has answered (never what) */}
-        <div className="flex justify-around gap-2">
+        <div className="glass flex justify-around gap-1 px-1 pb-2 pt-3">
           {sync.players.map((p) => (
             <PlayerChip key={p.user_id} p={p} frame={frames[p.user_id]} me={me} phase={sync.phase} emojis={reactions.forUser(p.user_id)} phrase={sync.phase !== 'question' ? lastPhrase(p.user_id)?.body : undefined} />
           ))}
@@ -180,10 +180,10 @@ export default function LiveMatch({ params }: { params: Record<string, string> }
         {sync.phase === 'starting' && (
           <div className="grid flex-1 place-items-center">
             <div className="text-center">
-              <p className="anim-pop text-8xl font-black tabular-nums text-brand" key={secondsTo(sync.next_at)}>
+              <p className="text-outline anim-slam font-display text-9xl font-extrabold leading-none tabular-nums text-gold" key={secondsTo(sync.next_at)}>
                 {secondsTo(sync.next_at) || '⚡'}
               </p>
-              <p className="mt-2 font-semibold">{t('match.starting')}</p>
+              <Ribbon className="mt-6">{t('match.starting')}</Ribbon>
             </div>
           </div>
         )}
@@ -204,27 +204,31 @@ export default function LiveMatch({ params }: { params: Record<string, string> }
               )}
             </div>
             <div className="mt-auto space-y-3">
-              {picked !== null && <p className="text-center text-sm font-semibold text-muted">🔒 {t('match.locked')} · {t('match.waiting')}</p>}
+              {picked !== null && (
+                <p className="glass anim-pop px-3 py-2 text-center font-display text-sm font-bold">
+                  🔒 {t('match.locked')} · {t('match.waiting')}
+                </p>
+              )}
               <Options q={sync.question} lang={ql.lang} selected={picked} removed={removed} locked={picked !== null} onPick={(i) => void pick(i)} />
               {sync.powerups.enabled && picked === null && (
-                <div className="grid grid-cols-2 gap-2">
-                  <Button size="sm" variant="secondary" disabled={sync.powerups.fifty_used} onClick={() => void power('fifty')}>
-                    ✂️ 50:50 · <Coin size={14} /> {sync.powerups.prices.fifty}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button size="sm" variant="violet" disabled={sync.powerups.fifty_used} onClick={() => void power('fifty')}>
+                    ✂️ 50:50 <span className="hud-pill !min-h-6 !gap-1 !py-0 !pl-1 !pr-2 text-sm"><Coin size={16} /> {sync.powerups.prices.fifty}</span>
                   </Button>
-                  <Button size="sm" variant="secondary" disabled={sync.powerups.time_used} onClick={() => void power('time')}>
-                    ⏱ +10s · <Coin size={14} /> {sync.powerups.prices.time}
+                  <Button size="sm" variant="accent" disabled={sync.powerups.time_used} onClick={() => void power('time')}>
+                    ⏱ +10s <span className="hud-pill !min-h-6 !gap-1 !py-0 !pl-1 !pr-2 text-sm"><Coin size={16} /> {sync.powerups.prices.time}</span>
                   </Button>
                 </div>
               )}
               <ReactionBar onReact={react} />
-              <p className="text-center text-[11px] text-muted">{t('chat.emojiOnly')}</p>
+              <p className="text-center text-xs text-muted">{t('chat.emojiOnly')}</p>
             </div>
           </>
         )}
 
         {sync.phase === 'reveal' && sync.question && (
           <>
-            <div className={cx('anim-pop rounded-2xl px-4 py-3 text-center font-bold', sync.mine?.correct ? 'bg-ok-bg text-ok' : 'bg-bad-bg text-bad')}>
+            <div className={cx('btn3d anim-slam px-4 py-2.5 text-center text-xl', sync.mine?.correct ? 'btn-green' : 'btn-red')}>
               {sync.mine?.correct ? `✓ ${t('play.correct')} ${t('match.you', { n: sync.mine.points ?? 0 })}` : sync.mine?.choice === null || sync.mine?.choice === undefined ? `⏱ ${t('match.noAnswer')}` : `✗ ${t('play.wrong')}`}
             </div>
             <QuestionText q={sync.question} lang={ql.lang} canToggle={ql.canToggle} onToggle={ql.toggle} meta={false} />
@@ -233,19 +237,23 @@ export default function LiveMatch({ params }: { params: Record<string, string> }
             <LayoutGroup>
               <ol className="space-y-1.5">
                 {sorted.map((p, i) => (
-                  <motion.li layout key={p.user_id} className={cx('flex items-center gap-2 rounded-xl px-2 py-1.5', p.user_id === me ? 'bg-accent-bg' : 'bg-surface')}>
-                    <span className="w-5 text-center font-black">{i + 1}</span>
-                    <Avatar avatar={p.avatar} frame={frames[p.user_id]} size={28} />
+                  <motion.li
+                    layout
+                    key={p.user_id}
+                    className={cx('glass flex items-center gap-2 !rounded-2xl px-2 py-1.5', p.user_id === me && '!border-[var(--blue)] bg-[rgb(47_140_255/0.22)]')}
+                  >
+                    <RankBadge rank={i + 1} />
+                    <Avatar avatar={p.avatar} frame={frames[p.user_id]} size={32} />
                     <span className="flex-1 truncate text-sm font-semibold">{p.name}</span>
-                    {p.points ? <span className="text-xs font-bold text-ok">+{p.points}</span> : null}
-                    {p.streak && p.streak >= 3 ? <span className="text-xs">🔥{p.streak}</span> : null}
-                    <span className="w-14 text-right font-bold tabular-nums">{p.score}</span>
+                    {p.points ? <span className="text-sm font-bold text-ok">+{p.points}</span> : null}
+                    {p.streak && p.streak >= 3 ? <span className="text-sm">🔥{p.streak}</span> : null}
+                    <span className="w-14 text-right font-display text-lg font-extrabold tabular-nums">{p.score}</span>
                   </motion.li>
                 ))}
               </ol>
             </LayoutGroup>
             <div className="mt-auto space-y-2">
-              <p className="text-center text-xs text-muted">
+              <p className="text-center font-display text-sm font-bold text-muted">
                 {sync.index !== null && sync.index + 1 < sync.n ? `${t('play.next')} · ${secondsTo(sync.next_at)}s` : t('match.over')}
               </p>
               <ReactionBar onReact={react} />
@@ -275,20 +283,20 @@ function PlayerChip({
     <div className="relative flex w-20 flex-col items-center">
       <FloatingEmoji emojis={emojis} />
       {phrase && (
-        <span className="anim-pop absolute -top-6 z-10 max-w-28 truncate rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-bg">
+        <span className="anim-pop absolute -top-7 z-10 max-w-28 truncate rounded-full bg-white px-2 py-0.5 text-xs font-bold text-[#2b1a0e] shadow-[0_2px_0_rgb(0_0_0/0.25)]">
           {t(`phrase.${phrase}` as 'phrase.gg')}
         </span>
       )}
       <div className="relative">
-        <Avatar avatar={p.avatar} frame={frame} size={44} ring={p.user_id === me ? 'var(--accent)' : undefined} />
+        <Avatar avatar={p.avatar} frame={frame} size={48} ring={p.user_id === me ? 'var(--gold)' : undefined} />
         {phase === 'question' && p.answered && (
-          <span className="anim-pop absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full bg-ok text-[11px] font-bold text-white" aria-label="answered">
+          <span className="anim-pop absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-green text-xs font-bold text-white" aria-label="answered">
             ✓
           </span>
         )}
       </div>
-      <span className="mt-0.5 max-w-full truncate text-xs font-semibold">{p.name}</span>
-      <span className="text-xs font-bold tabular-nums">{p.score}</span>
+      <span className="mt-1 max-w-full truncate text-xs font-semibold">{p.name}</span>
+      <span className="hud-pill mt-0.5 !min-h-7 !px-2.5 text-sm">{p.score}</span>
     </div>
   );
 }

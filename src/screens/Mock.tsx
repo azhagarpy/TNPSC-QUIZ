@@ -144,11 +144,11 @@ export default function Mock() {
           onHome={() => navigate('/', { replace: true })}
           extra={
             <Card>
-              <p className="text-2xl font-black">{t('mock.marks', { marks: result.marks ?? 0 })}</p>
+              <p className="font-display text-3xl font-extrabold">{t('mock.marks', { marks: result.marks ?? 0 })}</p>
               <p className={cx('text-sm font-semibold', result.coins > 0 ? 'text-ok' : 'text-muted')}>
                 {result.coins > 0 ? t('mock.reward') : t('mock.noReward')}
               </p>
-              <h3 className="mb-2 mt-4 font-bold">{t('mock.byUnit')}</h3>
+              <h3 className="mb-2 mt-4 font-display text-lg font-bold">{t('mock.byUnit')}</h3>
               <ul className="space-y-2">
                 {result.report?.map((r) => (
                   <li key={r.unit}>
@@ -174,7 +174,7 @@ export default function Mock() {
       <Screen title={t('mock.title')} back="/">
         <Card>
           <p className="text-sm">{t('mock.intro')}</p>
-          <Button block size="lg" className="mt-4" loading={busy} onClick={begin}>
+          <Button block size="lg" variant="gold" className="shine mt-4" loading={busy} onClick={begin}>
             {home?.mock_active ? t('home.mockResume') : t('mock.start')}
           </Button>
           {home?.mock_done_this_week && <p className="mt-2 text-xs text-muted">✓ {t('home.mockDone')}</p>}
@@ -194,7 +194,7 @@ export default function Mock() {
     <Screen
       title={`${t('mock.title')} · ${index + 1}/${info.n}`}
       right={
-        <span className={cx('rounded-full px-3 py-1 text-sm font-bold tabular-nums', LIMIT_S - elapsed < 600 ? 'bg-bad-bg text-bad' : 'bg-surface-2')}>
+        <span className={cx('hud-pill !px-3 tabular-nums', LIMIT_S - elapsed < 600 && 'anim-urgent !border-[var(--red)] !bg-[var(--red-lip)]')}>
           ⏱ {hms(Math.max(0, LIMIT_S - elapsed))}
         </span>
       }
@@ -243,8 +243,8 @@ export default function Mock() {
                 setPalette(false);
               }}
               className={cx(
-                'h-9 rounded-lg text-xs font-bold tabular-nums',
-                i === index ? 'bg-accent text-white' : answers.has(i) ? 'bg-ok-bg text-ok' : 'bg-surface-2',
+                'h-10 rounded-lg font-display text-sm font-bold tabular-nums',
+                i === index ? 'bg-blue text-white shadow-[0_2px_0_var(--blue-lip)]' : answers.has(i) ? 'border-2 border-[var(--green)] bg-ok-bg text-ok' : 'bg-chip',
               )}
             >
               {i + 1}

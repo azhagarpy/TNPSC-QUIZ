@@ -35,6 +35,7 @@ function vibrate(pattern: number | number[]) {
 }
 
 export const fx = {
+  click: () => tone(520, 0, 0.035, 'triangle', 0.03),
   tap: () => tone(660, 0, 0.05, 'triangle', 0.05),
   tick: () => tone(880, 0, 0.04, 'square', 0.03),
   correct: () => {

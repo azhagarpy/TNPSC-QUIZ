@@ -89,7 +89,7 @@ export default function Chat({ params }: { params: Record<string, string> }) {
       }
       back="/friends"
       right={
-        <button aria-label="menu" className="grid h-11 w-11 place-items-center rounded-full text-xl" onClick={() => setMenu(true)}>
+        <button aria-label="menu" className="btn-round" onClick={() => setMenu(true)}>
           ⋯
         </button>
       }
@@ -97,7 +97,7 @@ export default function Chat({ params }: { params: Record<string, string> }) {
         <div className="space-y-2">
           <div className="flex gap-1 overflow-x-auto">
             {REACTIONS.slice(0, 8).map((e) => (
-              <button key={e} className="h-10 w-10 shrink-0 rounded-full bg-surface-2 text-xl" onClick={() => void send(e)}>
+              <button key={e} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-line bg-chip text-xl shadow-[0_3px_0_rgb(0_0_0/0.2)] active:translate-y-0.5" onClick={() => void send(e)}>
                 {e}
               </button>
             ))}
@@ -126,7 +126,7 @@ export default function Chat({ params }: { params: Record<string, string> }) {
               {t('chat.send')}
             </Button>
           </form>
-          <p className="text-right text-[11px] text-muted">{text.length}/200</p>
+          <p className="text-right text-xs text-muted">{text.length}/200</p>
         </div>
       }
     >
@@ -139,9 +139,9 @@ export default function Chat({ params }: { params: Record<string, string> }) {
             const mine = m.sender_id === me;
             if (m.kind === 'invite' && m.meta) {
               return (
-                <div key={m.id} className={cx('max-w-[80%] rounded-2xl border-2 border-gold bg-gold/10 p-3', mine ? 'self-end' : 'self-start')}>
+                <div key={m.id} className={cx('panel max-w-[80%] !border-gold p-3', mine ? 'self-end' : 'self-start')}>
                   <p className="text-sm font-bold">⚔️ {t('chat.invite', { stake: m.meta.stake, size: m.meta.size })}</p>
-                  <p className="font-mono text-lg font-black tracking-widest">{m.meta.code}</p>
+                  <p className="font-display text-2xl font-extrabold tracking-widest">{m.meta.code}</p>
                   {!mine && (
                     <Button size="sm" variant="gold" className="mt-2" onClick={() => navigate(`/r/${m.meta!.code}`)}>
                       {t('chat.join')}
@@ -156,7 +156,7 @@ export default function Chat({ params }: { params: Record<string, string> }) {
               </div>
             );
           })}
-          {lastMineRead?.read_at && <p className="self-end text-[11px] text-muted">✓✓ {t('chat.seen')}</p>}
+          {lastMineRead?.read_at && <p className="self-end text-xs text-muted">✓✓ {t('chat.seen')}</p>}
           {typing && <p className="self-start text-sm italic text-muted">{t('chat.typing')}</p>}
           <div ref={bottom} />
         </div>

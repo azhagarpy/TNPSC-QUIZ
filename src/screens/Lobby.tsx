@@ -160,17 +160,27 @@ export default function Lobby({ params }: { params: Record<string, string> }) {
       <div className="space-y-4">
         {/* Code and sharing */}
         <Card className="text-center">
-          <p className="text-xs font-semibold text-muted">{t('room.code')}</p>
-          <p className="font-mono text-4xl font-black tracking-[0.3em]">{room.code}</p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <a href={whatsappUrl(`${shareText} ${link}`)} target="_blank" rel="noopener" className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#25D366] font-semibold text-white">
+          <p className="font-display text-sm font-bold text-muted">{t('room.code')}</p>
+          <p className="mt-1 flex justify-center gap-1.5" aria-label={room.code}>
+            {room.code.split('').map((ch, i) => (
+              <span
+                key={i}
+                className="grid h-13 w-10 place-items-center rounded-xl border-2 border-line bg-chip font-display text-3xl font-extrabold shadow-[inset_0_-3px_0_rgb(0_0_0/0.08)]"
+                aria-hidden
+              >
+                {ch}
+              </span>
+            ))}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <a href={whatsappUrl(`${shareText} ${link}`)} target="_blank" rel="noopener" className="btn3d btn-green inline-flex min-h-12 items-center justify-center px-2">
               {t('room.shareWa')}
             </a>
-            <Button variant="secondary" onClick={() => void shareOrWhatsapp(shareText, link)}>
-              {t('common.share')}
+            <Button variant="accent" onClick={() => void shareOrWhatsapp(shareText, link)}>
+              📤 {t('common.share')}
             </Button>
           </div>
-          <button className="mt-2 text-sm font-semibold text-accent" onClick={() => setInviteOpen(true)}>
+          <button className="mt-2 min-h-11 font-display font-bold text-accent" onClick={() => setInviteOpen(true)}>
             👥 {t('room.inviteFriends')}
           </button>
         </Card>
@@ -189,24 +199,31 @@ export default function Lobby({ params }: { params: Record<string, string> }) {
             const p = room.players.find((x) => x.seat === seat);
             if (!p) {
               return (
-                <div key={seat} className="grid min-h-28 place-items-center rounded-3xl border-2 border-dashed border-line text-sm text-muted">
-                  {t('room.emptySeat')}
+                <div key={seat} className="grid min-h-32 place-items-center rounded-3xl border-[3px] border-dashed border-line bg-white/5 p-2 text-center font-display text-sm font-bold text-muted">
+                  <span>
+                    <span className="anim-glow block text-3xl" aria-hidden>
+                      ➕
+                    </span>
+                    {t('room.emptySeat')}
+                  </span>
                 </div>
               );
             }
             const online = p.online || present.includes(p.user_id);
             return (
-              <div key={seat} className={cx('relative flex min-h-28 flex-col items-center justify-center rounded-3xl border-2 bg-surface p-2', p.ready ? 'border-ok' : 'border-line')}>
+              <div key={seat} className={cx('panel relative flex min-h-32 flex-col items-center justify-center p-2', p.ready && '!border-[var(--green)]')}>
                 <div className="relative">
                   <FloatingEmoji emojis={reactions.forUser(p.user_id)} />
-                  <Avatar avatar={p.avatar} frame={frames[p.user_id]} size={48} dim={!online} />
-                  {p.is_host && <span className="absolute -right-2 -top-2 text-lg" title={t('room.host')}>👑</span>}
+                  <Avatar avatar={p.avatar} frame={frames[p.user_id]} size={52} dim={!online} />
+                  {p.is_host && <span className="absolute -right-2 -top-3 text-xl" title={t('room.host')}>👑</span>}
                 </div>
-                <p className="mt-1 max-w-full truncate text-sm font-bold">{p.name}</p>
-                <p className={cx('text-xs font-semibold', p.ready ? 'text-ok' : 'text-muted')}>
-                  {p.ready ? `✓ ${t('room.ready')}` : online ? t('room.notReady') : t('room.away')}
-                </p>
-                {!p.can_afford && <p className="text-[11px] font-semibold text-bad">{t('room.cantAfford')}</p>}
+                <p className="mt-1 max-w-full truncate font-display font-bold">{p.name}</p>
+                {p.ready ? (
+                  <span className="btn3d btn-green anim-pop mt-0.5 px-2.5 py-0.5 text-sm">✓ {t('room.ready')}</span>
+                ) : (
+                  <p className="text-xs font-semibold text-muted">{online ? t('room.notReady') : t('room.away')}</p>
+                )}
+                {!p.can_afford && <p className="text-xs font-semibold text-bad">{t('room.cantAfford')}</p>}
               </div>
             );
           })}

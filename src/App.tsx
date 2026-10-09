@@ -81,7 +81,7 @@ function Gate() {
 function Splash() {
   return (
     <div className="grid min-h-dvh place-items-center">
-      <img src="/logo.svg" alt="" width={88} height={88} className="anim-pop rounded-3xl" />
+      <img src="/logo.svg" alt="" width={96} height={96} className="anim-bob rounded-3xl shadow-[0_8px_0_rgb(0_0_0/0.3)]" />
     </div>
   );
 }
@@ -123,9 +123,11 @@ function CrashScreen() {
   const { t } = useI18n();
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
-      <span className="text-5xl">😵</span>
-      <p className="font-semibold">{t('app.crashed')}</p>
-      <Button onClick={() => window.location.assign('/')}>{t('app.reload')}</Button>
+      <span className="glass grid h-24 w-24 place-items-center !rounded-full text-5xl">😵</span>
+      <p className="text-outline-sm font-display text-lg font-bold">{t('app.crashed')}</p>
+      <Button size="lg" variant="gold" onClick={() => window.location.assign('/')}>
+        🔁 {t('app.reload')}
+      </Button>
     </div>
   );
 }

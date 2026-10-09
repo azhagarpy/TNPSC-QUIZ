@@ -15,7 +15,7 @@ import { SHOP_AVATARS } from '../lib/cosmetics';
 import { useOwnedItems } from '../lib/owned';
 import { disablePush, enablePush, pushConfigured, pushEnabled } from '../lib/push';
 import { analyticsAvailable, setAnalytics, track } from '../lib/telemetry';
-import { Avatar, Button, Card, CoinChip, Field, ProgressBar, Screen, Segmented, Sheet, Toggle, cx, inputClass, useToast } from '../components/ui';
+import { Avatar, Button, Card, CoinChip, Field, LevelBadge, ProgressBar, Screen, Segmented, Sheet, Toggle, cx, inputClass, useToast } from '../components/ui';
 
 // Screen 14: level, badges, accuracy per unit, coin history, settings.
 export default function Profile() {
@@ -69,29 +69,32 @@ export default function Profile() {
   return (
     <Screen title={profile.display_name ?? ''} nav>
       <div className="space-y-4">
-        <Card className="flex items-center gap-4">
-          <button onClick={() => !isDemo && setAvatarOpen(true)} aria-label={t('profile.avatar')}>
-            <Avatar avatar={profile.avatar} frame={profile.frame} size={72} />
+        <div className="stage flex items-center gap-4 p-4">
+          <button onClick={() => !isDemo && setAvatarOpen(true)} aria-label={t('profile.avatar')} className="relative shrink-0">
+            <Avatar avatar={profile.avatar} frame={profile.frame} size={80} />
+            <LevelBadge level={lp.level} className="absolute -bottom-1 -right-1 h-9 min-w-9 text-lg" />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm text-muted">
+            <p className="truncate text-sm font-semibold text-muted">
               @{profile.username} · {districtName(profile.district, lang)}
             </p>
-            <p className="font-bold">
+            <p className="text-outline-sm font-display text-lg font-extrabold leading-snug">
               {t('common.level', { n: lp.level })} · {levelTitle(lp.level, lang)}
             </p>
-            <ProgressBar pct={lp.pct} color="bg-accent" />
+            <div className="mt-1">
+              <ProgressBar pct={lp.pct} color="bg-blue" />
+            </div>
             <p className="mt-1 text-xs text-muted">{lp.toNext > 0 && t('profile.nextLevel', { xp: lp.toNext, n: lp.level + 1 })}</p>
           </div>
-        </Card>
+        </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="!p-3">
-            <CoinChip value={summary.available} />
-            <p className="mt-2 text-xs text-muted">{t('profile.coinsRule')}</p>
+        <div className="grid gap-3">
+          <Card className="flex items-center gap-3 !p-3">
+            <CoinChip value={summary.available} className="shrink-0 text-lg" />
+            <p className="text-xs text-muted">{t('profile.coinsRule')}</p>
           </Card>
           <Card className="!p-3">
-            <p className="font-bold">🔥 {profile.streak_count}</p>
+            <p className="font-display text-2xl font-extrabold">🔥 {profile.streak_count}</p>
             <p className="text-xs text-muted">{t('profile.shields', { n: profile.shields })}</p>
             {!isDemo && (
               <Button
@@ -116,26 +119,39 @@ export default function Profile() {
 
         {stats && (
           <>
-            <p className="text-center text-sm text-muted">
-              {t('profile.matches', { m: stats.matches, w: stats.wins })} · {t('profile.soloSets', { n: stats.solo_sets })} ·{' '}
-              {t('profile.revision', { n: stats.revision_cards })}
-            </p>
+            <div className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
+              <span className="glass px-3 py-1.5">⚔️ {t('profile.matches', { m: stats.matches, w: stats.wins })}</span>
+              <span className="glass px-3 py-1.5">🎯 {t('profile.soloSets', { n: stats.solo_sets })}</span>
+              <span className="glass px-3 py-1.5">📚 {t('profile.revision', { n: stats.revision_cards })}</span>
+            </div>
 
             <Card>
-              <h2 className="mb-3 font-bold">🏅 {t('profile.badges')}</h2>
+              <h2 className="mb-3 text-lg font-extrabold">🏅 {t('profile.badges')}</h2>
               <div className="grid grid-cols-3 gap-2">
                 {stats.achievements.map((a) => (
-                  <div key={a.key} className={cx('rounded-2xl p-2 text-center', a.earned_at ? 'bg-gold/20' : 'bg-surface-2 opacity-50')} title={lang === 'ta' ? a.desc_ta : a.desc_en}>
-                    <p className="text-2xl">{a.icon}</p>
-                    <p className="text-[11px] font-semibold leading-tight">{lang === 'ta' ? a.name_ta : a.name_en}</p>
-                    {!a.earned_at && <p className="mt-0.5 text-[10px] leading-tight">{lang === 'ta' ? a.desc_ta : a.desc_en}</p>}
+                  <div
+                    key={a.key}
+                    className={cx(
+                      'tamil-wrap relative rounded-2xl border-2 p-2 text-center',
+                      a.earned_at ? 'btn3d btn-gold !text-shadow-none' : 'border-dashed border-line bg-chip',
+                    )}
+                    title={lang === 'ta' ? a.desc_ta : a.desc_en}
+                  >
+                    <p className={cx('text-3xl', !a.earned_at && 'opacity-40 grayscale')}>{a.icon}</p>
+                    {!a.earned_at && (
+                      <span className="absolute right-1.5 top-1.5 text-sm" aria-hidden>
+                        🔒
+                      </span>
+                    )}
+                    <p className="text-xs font-bold leading-tight">{lang === 'ta' ? a.name_ta : a.name_en}</p>
+                    {!a.earned_at && <p className="mt-0.5 text-xs leading-tight text-muted">{lang === 'ta' ? a.desc_ta : a.desc_en}</p>}
                   </div>
                 ))}
               </div>
             </Card>
 
             <Card>
-              <h2 className="mb-3 font-bold">🎯 {t('profile.accuracy')}</h2>
+              <h2 className="mb-3 text-lg font-extrabold">🎯 {t('profile.accuracy')}</h2>
               <ul className="space-y-2">
                 {stats.units
                   .filter((u) => u.answered > 0)
@@ -153,7 +169,7 @@ export default function Profile() {
               </ul>
               {stats.weak.length > 0 && (
                 <>
-                  <h3 className="mb-1 mt-4 text-sm font-bold">{t('profile.weak')}</h3>
+                  <h3 className="mb-1 mt-4 font-display font-bold">{t('profile.weak')}</h3>
                   <ul className="text-sm">
                     {stats.weak.map((w) => (
                       <li key={w.unit + w.subtopic} className="flex justify-between">
@@ -174,7 +190,7 @@ export default function Profile() {
 
         {recent.length > 0 && (
           <Card>
-            <h2 className="mb-2 font-bold">⚔️ {t('profile.recentRooms')}</h2>
+            <h2 className="mb-2 text-lg font-extrabold">⚔️ {t('profile.recentRooms')}</h2>
             <ul className="space-y-1 text-sm">
               {recent.slice(0, 8).map((m) => (
                 <li key={m.id}>
@@ -194,7 +210,7 @@ export default function Profile() {
 
         {ledger.length > 0 && (
           <Card>
-            <h2 className="mb-2 font-bold">🪙 {t('profile.coinHistory')}</h2>
+            <h2 className="mb-2 text-lg font-extrabold">🪙 {t('profile.coinHistory')}</h2>
             <ul className="space-y-1 text-sm">
               {ledger.map((l) => (
                 <li key={l.id} className="flex justify-between gap-2">
@@ -210,7 +226,7 @@ export default function Profile() {
         )}
 
         <Card>
-          <h2 className="mb-2 font-bold">⚙️ {t('profile.settings')}</h2>
+          <h2 className="mb-2 text-lg font-extrabold">⚙️ {t('profile.settings')}</h2>
           <Field label={t('profile.language')}>
             <Segmented
               value={lang}

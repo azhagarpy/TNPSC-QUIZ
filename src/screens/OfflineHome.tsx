@@ -10,7 +10,7 @@ export default function OfflineHome() {
   return (
     <div>
       <div className="mx-auto max-w-md px-4 pt-4">
-        <div className="flex items-center justify-between gap-3 rounded-2xl bg-bad-bg p-3">
+        <div className="glass flex items-center justify-between gap-3 !border-[var(--red)] p-3">
           <span className="text-sm font-semibold">📴 {t('common.offline')}</span>
           <Button size="sm" variant="secondary" onClick={() => void refresh()}>
             {t('common.retry')}

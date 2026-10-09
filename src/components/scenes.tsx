@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react';
 import { useTier, type Tier } from '../lib/device';
 import { AVATARS } from '../lib/units';
-import { Coin, cx } from './ui';
+import { Coin, Ribbon, cx } from './ui';
 
 // Reward moments (plan: MVP ships the stake pot and the results podium).
 // three.js is a separate chunk loaded only on high/medium-tier phones; low tier
@@ -33,7 +33,7 @@ export function StakePotScene({ count, stake }: { count: number; stake: number }
   const tier = useTier();
   const flat = <StakePot2D count={count} still={tier === 'reduced'} />;
   return (
-    <div className="relative h-40 w-full overflow-hidden rounded-3xl bg-linear-to-b from-accent-bg to-surface-2">
+    <div className="stage relative h-40 w-full overflow-hidden">
       {use3D(tier) ? (
         <SceneBoundary fallback={flat}>
           <Suspense fallback={flat}>
@@ -43,9 +43,9 @@ export function StakePotScene({ count, stake }: { count: number; stake: number }
       ) : (
         flat
       )}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-surface/90 px-3 py-1 text-sm font-bold shadow-card">
+      <div className="hud-pill absolute bottom-2 left-1/2 -translate-x-1/2 text-lg">
         <span className="inline-flex items-center gap-1">
-          <Coin /> {(count * stake).toLocaleString('en-IN')}
+          <Coin size={24} /> {(count * stake).toLocaleString('en-IN')}
         </span>
       </div>
     </div>
@@ -58,7 +58,7 @@ export function PodiumScene({ entries }: { entries: PodiumEntry[] }) {
   const flat = <Podium2D entries={ordered} still={tier === 'reduced'} />;
   return (
     <div className="w-full">
-      <div className="relative h-48 w-full overflow-hidden rounded-3xl bg-linear-to-b from-accent-bg to-surface-2">
+      <div className="stage relative h-52 w-full overflow-hidden">
         {use3D(tier) ? (
           <SceneBoundary fallback={flat}>
             <Suspense fallback={flat}>
@@ -70,10 +70,10 @@ export function PodiumScene({ entries }: { entries: PodiumEntry[] }) {
         )}
       </div>
       {use3D(tier) && (
-        <div className="mt-2 grid text-center text-xs" style={{ gridTemplateColumns: `repeat(${ordered.length}, minmax(0, 1fr))` }}>
+        <div className="mt-2 grid text-center text-sm" style={{ gridTemplateColumns: `repeat(${ordered.length}, minmax(0, 1fr))` }}>
           {ordered.map((e) => (
-            <div key={e.name + e.rank} className="truncate px-1">
-              <span className="font-bold">#{e.rank}</span> {AVATARS[e.avatar]?.emoji} {e.name}
+            <div key={e.name + e.rank} className="truncate px-1 font-semibold">
+              <span className="font-display font-extrabold">#{e.rank}</span> {AVATARS[e.avatar]?.emoji} {e.name}
             </div>
           ))}
         </div>
@@ -102,7 +102,7 @@ export function TableScene({ seats, stake }: { seats: { avatar: string; ready: b
   const present = seats.filter((s) => s.present).length;
   const flat = <StakePot2D count={present} still={tier === 'reduced'} />;
   return (
-    <div className="relative h-44 w-full overflow-hidden rounded-3xl bg-linear-to-b from-accent-bg to-surface-2">
+    <div className="stage relative h-44 w-full overflow-hidden">
       {use3D(tier) ? (
         <SceneBoundary fallback={flat}>
           <Suspense fallback={flat}>
@@ -117,9 +117,9 @@ export function TableScene({ seats, stake }: { seats: { avatar: string; ready: b
       ) : (
         flat
       )}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-surface/90 px-3 py-1 text-sm font-bold shadow-card">
+      <div className="hud-pill absolute bottom-2 left-1/2 -translate-x-1/2 text-lg">
         <span className="inline-flex items-center gap-1">
-          <Coin /> {(present * stake).toLocaleString('en-IN')}
+          <Coin size={24} /> {(present * stake).toLocaleString('en-IN')}
         </span>
       </div>
     </div>
@@ -131,9 +131,10 @@ export function LevelUpOverlay({ level, title, onClose }: { level: number; title
   const tier = useTier();
   const flat = <Trophy2D still={tier === 'reduced'} />;
   return (
-    <button className="fixed inset-0 z-50 grid place-items-center bg-black/55" onClick={onClose} aria-label={title}>
-      <div className="anim-pop flex flex-col items-center text-white">
-        <div className="h-56 w-56">
+    <button className="fixed inset-0 z-50 grid place-items-center overflow-hidden bg-[rgb(8_2_30/0.78)]" onClick={onClose} aria-label={title}>
+      <div className="anim-pop relative flex flex-col items-center text-white">
+        <span className="rays" aria-hidden />
+        <div className="relative h-56 w-56">
           {use3D(tier) ? (
             <SceneBoundary fallback={flat}>
               <Suspense fallback={flat}>
@@ -144,8 +145,10 @@ export function LevelUpOverlay({ level, title, onClose }: { level: number; title
             flat
           )}
         </div>
-        <p className="text-4xl font-black drop-shadow">{level}</p>
-        <p className="mt-1 text-lg font-bold drop-shadow">{title}</p>
+        <p className="text-outline relative font-display text-7xl font-extrabold leading-none">{level}</p>
+        <span className="relative mt-4">
+          <Ribbon color="gold">{title}</Ribbon>
+        </span>
       </div>
     </button>
   );
@@ -235,9 +238,12 @@ function Podium2D({ entries, still }: { entries: PodiumEntry[]; still: boolean }
           <span className={cx('mb-1 text-3xl', !still && 'anim-pop')} style={{ animationDelay: `${0.3 + i * 0.15}s` }}>
             {AVATARS[e.avatar]?.emoji}
           </span>
-          <span className="mb-1 max-w-full truncate text-xs font-semibold">{e.name}</span>
+          <span className="mb-1 max-w-full truncate text-sm font-semibold">{e.name}</span>
           <div
-            className={cx('flex w-full origin-bottom items-start justify-center rounded-t-xl pt-1 text-lg font-black text-white', e.rank === 1 ? 'bg-gold' : 'bg-accent')}
+            className={cx(
+              'flex w-full origin-bottom items-start justify-center rounded-t-xl border-2 border-b-0 pt-1 font-display text-2xl font-extrabold shadow-[inset_0_3px_0_rgb(255_255_255/0.35)]',
+              e.rank === 1 ? 'border-[var(--gold-lip)] bg-gold text-gold-ink' : 'border-[var(--blue-lip)] bg-blue text-white',
+            )}
             style={{ height: heights[e.rank] ?? 36, animation: still ? undefined : `grow-up 0.6s ease-out ${i * 0.1}s both` }}
           >
             {e.rank}

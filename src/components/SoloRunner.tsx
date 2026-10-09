@@ -22,6 +22,7 @@ export function SoloRunner({
   const [selected, setSelected] = useState<number | null>(null);
   const [reveal, setReveal] = useState<SoloReveal | null>(null);
   const [results, setResults] = useState<(boolean | null)[]>([]);
+  const [score, setScore] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [inDeck, setInDeck] = useState(false);
@@ -65,6 +66,7 @@ export function SoloRunner({
     try {
       const r = await engine.answer(index, choice);
       setReveal(r);
+      if (typeof r.score === 'number') setScore(r.score);
       onRevealed?.(index, r);
       setResults((xs) => {
         const c = [...xs];
@@ -97,7 +99,7 @@ export function SoloRunner({
   const quit = (
     <button
       aria-label={t('play.quit')}
-      className="grid h-11 w-11 place-items-center rounded-full text-xl hover:bg-surface-2"
+      className="btn-round"
       onClick={() => (reveal === null && index === 0 ? onQuit() : confirm(t('play.quitConfirm')) && onQuit())}
     >
       ✕
@@ -107,12 +109,24 @@ export function SoloRunner({
   const last = index + 1 >= engine.n;
   return (
     <Screen
-      title={title}
-      right={quit}
+      title={
+        <span className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-base">{title}</span>
+          <span className="font-display text-sm font-bold text-muted [text-shadow:none]">{t('play.question', { i: index + 1, n: engine.n })}</span>
+        </span>
+      }
+      right={
+        <div className="flex items-center gap-2">
+          <span className="hud-pill !pl-2.5" aria-label={t('result.score', { n: score })}>
+            <span aria-hidden>⭐</span> {score}
+          </span>
+          {quit}
+        </div>
+      }
       footer={
         reveal && (
-          <Button block size="lg" onClick={next} loading={busy}>
-            {last ? t('play.finish') : t('play.next')}
+          <Button block size="lg" variant={reveal.correct ? 'success' : 'primary'} onClick={next} loading={busy}>
+            {last ? t('play.finish') : t('play.next')} <span aria-hidden>▶</span>
           </Button>
         )
       }
@@ -120,11 +134,23 @@ export function SoloRunner({
       <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4">
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <p className="mb-1 text-sm font-semibold text-muted">{t('play.question', { i: index + 1, n: engine.n })}</p>
             <ProgressDots n={engine.n} current={index} results={results} />
           </div>
-          {q && deadline && engine.timerS && !reveal && (
+          {/* The timer slot turns into a ✓ / ✗ medallion once the answer is shown. */}
+          {reveal ? (
+            <span
+              className={cx(
+                'btn3d anim-slam grid h-16 w-16 shrink-0 place-items-center !rounded-full text-3xl',
+                reveal.correct ? 'btn-green' : 'btn-red',
+              )}
+              aria-hidden
+            >
+              {reveal.correct ? '✓' : reveal.choice === null ? '⏱' : '✗'}
+            </span>
+          ) : q && deadline && engine.timerS ? (
             <TimerRing key={`${index}-${deadline}`} deadline={deadline} totalMs={engine.timerS * 1000} onExpire={() => void answer(null)} />
+          ) : (
+            <span className="h-16 w-16 shrink-0" />
           )}
         </div>
 
@@ -136,14 +162,28 @@ export function SoloRunner({
           <>
             <QuestionText q={q} lang={lang} canToggle={canToggle} onToggle={toggle} />
             {reveal && (
-              <div className={cx('anim-pop flex items-center justify-between rounded-2xl px-4 py-3 font-bold', reveal.correct ? 'bg-ok-bg text-ok' : 'bg-bad-bg text-bad')}>
-                <span>
+              <div
+                className={cx(
+                  'btn3d anim-slam relative flex items-center justify-between gap-2 px-4 py-2.5',
+                  reveal.correct ? 'btn-green' : 'btn-red',
+                )}
+              >
+                <span className="text-2xl leading-tight">
                   {reveal.correct ? `✓ ${t('play.correct')}` : reveal.choice === null ? `⏱ ${t('play.timeUp')}` : `✗ ${t('play.wrong')}`}
                 </span>
-                <span className="text-sm">
-                  {reveal.points > 0 && t('play.points', { n: reveal.points })}
-                  {reveal.streak >= 3 && ` · 🔥 ${t('play.streak', { n: reveal.streak })}`}
+                <span className="text-right text-sm leading-tight">
+                  {reveal.points > 0 && <span className="block">{t('play.points', { n: reveal.points })}</span>}
+                  {reveal.streak >= 3 && <span className="block">🔥 {t('play.streak', { n: reveal.streak })}</span>}
                 </span>
+                {reveal.points > 0 && (
+                  <span
+                    className="text-outline pointer-events-none absolute -top-3 right-6 font-display text-3xl font-extrabold text-gold"
+                    style={{ animation: 'float-up 1.3s ease-out forwards' }}
+                    aria-hidden
+                  >
+                    +{reveal.points}
+                  </span>
+                )}
               </div>
             )}
             <div className="mt-auto">
@@ -163,7 +203,7 @@ export function SoloRunner({
                   {q.id > 0 && engine.mode !== 'offline' ? (
                     reveal.correct && !inDeck ? (
                       <button
-                        className="text-xs font-semibold text-accent underline"
+                        className="min-h-11 text-sm font-semibold text-accent underline"
                         onClick={async () => {
                           try {
                             await api.addToRevision(q.id);
@@ -176,7 +216,7 @@ export function SoloRunner({
                         + {t('play.addRevision')}
                       </button>
                     ) : (
-                      <span className="text-xs text-muted">📚 {t('play.addedRevision')}</span>
+                      <span className="text-sm text-muted">📚 {t('play.addedRevision')}</span>
                     )
                   ) : (
                     <span />

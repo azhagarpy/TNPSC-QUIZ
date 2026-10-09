@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fx } from '../lib/feedback';
 import { useI18n } from '../lib/i18n';
 import { downloadPack, loadPack, unusedQuestions, type StoredPack } from '../lib/offline';
 import { isStandalone } from '../lib/platform';
@@ -13,6 +14,38 @@ export interface PlayConfig {
   subject?: string | null;
   level?: string | null;
   subtopic?: string | null;
+}
+
+/** A pickable subject: a cream tile that turns gold with a check badge when chosen. */
+function SubjectTile({ icon, label, on, wide, onClick }: { icon: string; label: string; on: boolean; wide?: boolean; onClick: () => void }) {
+  return (
+    <button
+      role="radio"
+      aria-checked={on}
+      onClick={() => {
+        fx.click();
+        onClick();
+      }}
+      className={cx(
+        'btn3d relative flex min-h-16 gap-2.5 px-3 py-2.5 text-left text-sm leading-snug wrap-break-word',
+        on ? 'btn-gold' : 'btn-cream',
+        wide ? 'col-span-2 items-center text-base' : 'flex-col items-start',
+      )}
+    >
+      <span
+        className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-xl font-display text-xl font-extrabold shadow-[inset_0_-3px_0_rgb(0_0_0/0.12)]', on ? 'bg-white/45' : 'bg-chip')}
+        aria-hidden
+      >
+        {icon}
+      </span>
+      <span className="w-full min-w-0 flex-1">{label}</span>
+      {on && (
+        <span className="anim-pop absolute -right-2 -top-2 grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-green text-sm text-white" aria-hidden>
+          ✓
+        </span>
+      )}
+    </button>
+  );
 }
 
 // Screen 4: subject/unit picker, mixed mode, difficulty.
@@ -51,30 +84,16 @@ export default function SoloSetup() {
         {!isOffline && (
           <>
             <section>
-              <h2 className="mb-2 font-bold">{t('solo.subject')}</h2>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setSubject('mixed')}
-                  className={cx('col-span-2 min-h-14 rounded-2xl border-2 px-3 text-left font-semibold', subject === 'mixed' ? 'border-brand bg-brand/10' : 'border-line bg-surface')}
-                >
-                  🎲 {t('solo.mixed')}
-                </button>
+              <h2 className="text-outline-sm mb-3 text-xl font-extrabold">📚 {t('solo.subject')}</h2>
+              <div className="grid grid-cols-2 gap-3" role="radiogroup">
+                <SubjectTile wide icon="🎲" label={t('solo.mixed')} on={subject === 'mixed'} onClick={() => setSubject('mixed')} />
                 {UNITS.map((u) => (
-                  <button
-                    key={u.key}
-                    onClick={() => setSubject(u.key)}
-                    className={cx('tamil-wrap min-h-14 rounded-2xl border-2 px-3 py-2 text-left text-sm font-semibold', subject === u.key ? 'border-brand bg-brand/10' : 'border-line bg-surface')}
-                  >
-                    <span className="mr-1" aria-hidden>
-                      {unitIcon(u.key)}
-                    </span>
-                    {u[lang]}
-                  </button>
+                  <SubjectTile key={u.key} icon={unitIcon(u.key)} label={u[lang]} on={subject === u.key} onClick={() => setSubject(u.key)} />
                 ))}
               </div>
             </section>
             <section>
-              <h2 className="mb-2 font-bold">{t('solo.level')}</h2>
+              <h2 className="text-outline-sm mb-3 text-xl font-extrabold">⚔️ {t('solo.level')}</h2>
               <Segmented
                 value={level}
                 onChange={setLevel}
@@ -87,18 +106,24 @@ export default function SoloSetup() {
               />
             </section>
             <div>
-              <Button block size="lg" onClick={() => play({ mode: isDemo ? 'demo' : 'practice', subject: subject === 'mixed' ? null : subject, level: level === 'auto' ? null : level })}>
+              <Button
+                block
+                size="lg"
+                variant="gold"
+                className="shine !min-h-16 !text-xl"
+                onClick={() => play({ mode: isDemo ? 'demo' : 'practice', subject: subject === 'mixed' ? null : subject, level: level === 'auto' ? null : level })}
+              >
                 ▶ {t('solo.start')}
               </Button>
-              <p className="mt-2 text-center text-xs text-muted">{t('solo.rules')}</p>
+              <p className="glass mt-3 px-3 py-2 text-center text-xs font-semibold text-muted">⏱ {t('solo.rules')}</p>
             </div>
 
             {!isDemo && (
               <Card>
-                <p className="font-bold">📚 {t('solo.revisionStart')}</p>
+                <h2 className="text-lg font-extrabold">🔁 {t('solo.revisionStart')}</h2>
                 <p className="mb-3 text-sm text-muted">{t('solo.revisionBody')}</p>
-                <Button variant="secondary" size="sm" onClick={() => play({ mode: 'revision' })}>
-                  {t('home.revisionDue', { n: summary?.revision_due ?? 0 })} →
+                <Button variant="accent" size="sm" onClick={() => play({ mode: 'revision' })}>
+                  {t('home.revisionDue', { n: summary?.revision_due ?? 0 })} ›
                 </Button>
               </Card>
             )}
@@ -106,8 +131,8 @@ export default function SoloSetup() {
         )}
 
         {!isDemo && (
-          <Card className={cx(isOffline && 'border-accent')}>
-            <p className="font-bold">📴 {t('solo.offline')}</p>
+          <Card className={cx(isOffline && '!border-[var(--blue)]')}>
+            <h2 className="text-lg font-extrabold">📴 {t('solo.offline')}</h2>
             <p className="mb-3 text-sm text-muted">{t('solo.offlineBody')}</p>
             {pack && <p className="mb-2 text-sm font-semibold">{t('solo.offlineReady', { n: left })}</p>}
             <div className="flex flex-wrap gap-2">

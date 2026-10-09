@@ -1,70 +1,106 @@
 @import 'tailwindcss';
 
+/*
+ * Game look: everything sits on an "arena" background; content goes in cream
+ * panels; actions are chunky 3D buttons. Text tokens are scoped by context:
+ * on the arena they are light, inside a panel they are dark, so `text-ink`,
+ * `text-muted`, `bg-ok-bg` etc. read right wherever they are used.
+ */
+
 :root {
-  --bg: #fff8ee;
-  --surface: #ffffff;
-  --surface-2: #fdf0e1;
-  --ink: #2a1e12;
-  --muted: #74624f;
-  --line: #ecdcc8;
-  --brand: #b0124f;
-  --brand-2: #8a0d3d;
+  /* Button colours: a face and a darker lip (the 3D edge). Same in both themes. */
+  --pink: #ff3d8b;
+  --pink-lip: #b3105a;
+  --gold: #ffc629;
+  --gold-lip: #c78300;
+  --gold-ink: #4a2c00;
+  --blue: #2f8cff;
+  --blue-lip: #1656c2;
+  --green: #2fca69;
+  --green-lip: #168a40;
+  --red: #ff4f5e;
+  --red-lip: #b31b2d;
+  --violet: #8f5bff;
+  --violet-lip: #5428c2;
+  --brand: #e8217a;
+  --brand-2: #c2125f;
   --brand-ink: #ffffff;
-  --gold: #f2b705;
-  --gold-ink: #5c4300;
-  --ok: #157a46;
-  --ok-bg: #dff5e8;
-  --bad: #c2321f;
-  --bad-bg: #fde3df;
-  --accent: #5b34d6;
-  --accent-bg: #ece6ff;
-  --shadow: 0 1px 2px rgb(60 30 0 / 0.08), 0 4px 14px rgb(60 30 0 / 0.08);
+
+  --arena-1: #5b2fd9;
+  --arena-2: #31109a;
+  --arena-3: #1a0660;
+  --bg: #1d0868;
+  --hud: rgb(18 5 66 / 0.8);
+
+  --surface: #fffaf0;
+  --surface-2: #f6ead3;
+  --panel-edge: #e8d3ae;
+  --panel-lip: #c9ab7c;
+  --p-ink: #2b1a0e;
+  --p-muted: #745d45;
+  --p-line: #ead7b7;
+  --p-ok: #12803f;
+  --p-ok-bg: #d8f6e3;
+  --p-bad: #c42b2b;
+  --p-bad-bg: #ffe2e0;
+  --p-accent: #1d5ed4;
+  --p-accent-bg: #e1ebff;
+  --p-chip: #f1e3c8;
+  --p-sheen: rgb(255 255 255 / 0.65);
+
+  --shadow: 0 3px 0 rgb(20 0 60 / 0.2), 0 10px 22px rgb(12 0 48 / 0.26);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #17121f;
-    --surface: #221a2e;
-    --surface-2: #2c2239;
-    --ink: #f6eee3;
-    --muted: #b8a99a;
-    --line: #3a2e4a;
-    --brand: #f0588f;
-    --brand-2: #ff7aa8;
-    --brand-ink: #1b0710;
-    --gold: #ffc933;
-    --gold-ink: #2b1f00;
-    --ok: #4ad38b;
-    --ok-bg: #143523;
-    --bad: #ff7a66;
-    --bad-bg: #3d1914;
-    --accent: #a891ff;
-    --accent-bg: #2a2150;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+    --arena-1: #3b1aa3;
+    --arena-2: #1f0a68;
+    --arena-3: #0e0338;
+    --bg: #12044a;
+    --hud: rgb(10 2 40 / 0.85);
+    --surface: #2b2168;
+    --surface-2: #372b80;
+    --panel-edge: #4b3ea3;
+    --panel-lip: #140c45;
+    --p-ink: #f6f1ff;
+    --p-muted: #c1b6f2;
+    --p-line: #483b98;
+    --p-ok: #6cf5a0;
+    --p-ok-bg: rgb(47 202 105 / 0.2);
+    --p-bad: #ffa3ab;
+    --p-bad-bg: rgb(255 79 94 / 0.22);
+    --p-accent: #a3ccff;
+    --p-accent-bg: rgb(47 140 255 / 0.22);
+    --p-chip: #3a2e86;
+    --p-sheen: rgb(255 255 255 / 0.07);
+    --shadow: 0 3px 0 rgb(0 0 0 / 0.35), 0 10px 22px rgb(0 0 0 / 0.4);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #17121f;
-  --surface: #221a2e;
-  --surface-2: #2c2239;
-  --ink: #f6eee3;
-  --muted: #b8a99a;
-  --line: #3a2e4a;
-  --brand: #f0588f;
-  --brand-2: #ff7aa8;
-  --brand-ink: #1b0710;
-  --gold: #ffc933;
-  --gold-ink: #2b1f00;
-  --ok: #4ad38b;
-  --ok-bg: #143523;
-  --bad: #ff7a66;
-  --bad-bg: #3d1914;
-  --accent: #a891ff;
-  --accent-bg: #2a2150;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+  --arena-1: #3b1aa3;
+  --arena-2: #1f0a68;
+  --arena-3: #0e0338;
+  --bg: #12044a;
+  --hud: rgb(10 2 40 / 0.85);
+  --surface: #2b2168;
+  --surface-2: #372b80;
+  --panel-edge: #4b3ea3;
+  --panel-lip: #140c45;
+  --p-ink: #f6f1ff;
+  --p-muted: #c1b6f2;
+  --p-line: #483b98;
+  --p-ok: #6cf5a0;
+  --p-ok-bg: rgb(47 202 105 / 0.2);
+  --p-bad: #ffa3ab;
+  --p-bad-bg: rgb(255 79 94 / 0.22);
+  --p-accent: #a3ccff;
+  --p-accent-bg: rgb(47 140 255 / 0.22);
+  --p-chip: #3a2e86;
+  --p-sheen: rgb(255 255 255 / 0.07);
+  --shadow: 0 3px 0 rgb(0 0 0 / 0.35), 0 10px 22px rgb(0 0 0 / 0.4);
   color-scheme: dark;
 }
 
@@ -75,11 +111,17 @@
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-chip: var(--chip);
   --color-brand: var(--brand);
   --color-brand-2: var(--brand-2);
   --color-brand-ink: var(--brand-ink);
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
+  --color-pink: var(--pink);
+  --color-blue: var(--blue);
+  --color-green: var(--green);
+  --color-red: var(--red);
+  --color-violet: var(--violet);
   --color-ok: var(--ok);
   --color-ok-bg: var(--ok-bg);
   --color-bad: var(--bad);
@@ -87,39 +129,450 @@
   --color-accent: var(--accent);
   --color-accent-bg: var(--accent-bg);
   --font-sans: 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Baloo Thambi 2', 'Noto Sans Tamil', system-ui, sans-serif;
   --shadow-card: var(--shadow);
 }
 
-html,
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none;
+/* Smallest text is 13 px: readable at arm's length on a 360 px phone. */
+@theme {
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.35;
 }
 
-body {
-  min-height: 100dvh;
+@layer base {
+  /* On the arena (default) */
+  :root,
+  .on-arena {
+    --ink: #ffffff;
+    --muted: #d8cfff;
+    --line: rgb(255 255 255 / 0.2);
+    --ok: #6cf5a0;
+    --ok-bg: rgb(47 202 105 / 0.24);
+    --bad: #ffa3ab;
+    --bad-bg: rgb(255 79 94 / 0.26);
+    --accent: #a3ccff;
+    --accent-bg: rgb(47 140 255 / 0.28);
+    --chip: rgb(255 255 255 / 0.13);
+    --focus: #ffe14d;
+  }
+  .on-arena {
+    color: var(--ink);
+  }
+
+  /* Inside a panel */
+  .panel,
+  .tile,
+  .bg-surface,
+  .bg-surface-2,
+  .bg-surface\/90,
+  .bg-surface\/95 {
+    --ink: var(--p-ink);
+    --muted: var(--p-muted);
+    --line: var(--p-line);
+    --ok: var(--p-ok);
+    --ok-bg: var(--p-ok-bg);
+    --bad: var(--p-bad);
+    --bad-bg: var(--p-bad-bg);
+    --accent: var(--p-accent);
+    --accent-bg: var(--p-accent-bg);
+    --chip: var(--p-chip);
+    --focus: var(--p-accent);
+    color: var(--ink);
+  }
+
+  html,
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  /* The arena: kolam dot grid over coloured glows. Fixed, so it never scrolls or repaints. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle, rgb(255 255 255 / 0.09) 1.5px, transparent 2px) 0 0 / 24px 24px,
+      radial-gradient(55% 32% at 100% 0%, rgb(255 61 139 / 0.38), transparent 70%),
+      radial-gradient(60% 38% at 0% 42%, rgb(47 140 255 / 0.3), transparent 70%),
+      radial-gradient(80% 45% at 50% 105%, rgb(255 198 41 / 0.18), transparent 70%),
+      linear-gradient(180deg, var(--arena-1), var(--arena-2) 55%, var(--arena-3));
+  }
+
+  /* Pop-in animations scale past the screen edge; never let them widen the page
+     (a wider page makes phones zoom out). `clip` keeps sticky bars working. */
+  #root {
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    line-height: 1.25;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
 }
 
-#root {
-  min-height: 100dvh;
-}
+@layer components {
+  .panel {
+    background-color: var(--surface);
+    background-image: linear-gradient(180deg, var(--p-sheen), transparent 38%);
+    border: 2px solid var(--panel-edge);
+    border-radius: 22px;
+    box-shadow:
+      0 4px 0 var(--panel-lip),
+      0 12px 24px rgb(12 0 48 / 0.28);
+  }
 
-button,
-a,
-input,
-select,
-textarea {
-  touch-action: manipulation;
-}
+  /* See-through dark panel for HUD pieces that sit on the arena. */
+  .glass {
+    background: rgb(14 3 56 / 0.42);
+    border: 2px solid rgb(255 255 255 / 0.14);
+    border-radius: 20px;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.07);
+  }
 
-:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
+  .hud-bar {
+    background: var(--hud);
+    border-bottom: 2px solid rgb(255 255 255 / 0.08);
+    box-shadow: 0 6px 16px rgb(0 0 0 / 0.18);
+  }
+
+  /* Spotlight stage behind scenes (chest, pot, podium). */
+  .stage {
+    background:
+      radial-gradient(70% 80% at 50% 100%, rgb(255 198 41 / 0.3), transparent 70%),
+      radial-gradient(60% 60% at 50% 0%, rgb(255 255 255 / 0.12), transparent 70%),
+      rgb(14 3 56 / 0.45);
+    border: 2px solid rgb(255 255 255 / 0.14);
+    border-radius: 24px;
+  }
+
+  /* Chunky button: a face with a lip under it; it presses down when tapped. */
+  .btn3d {
+    --face: var(--pink);
+    --lip: var(--pink-lip);
+    --btn-ink: #ffffff;
+    color: var(--btn-ink);
+    background-color: var(--face);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.3), rgb(255 255 255 / 0) 50%);
+    border: 2px solid var(--lip);
+    border-radius: 18px;
+    box-shadow:
+      0 5px 0 var(--lip),
+      0 9px 16px rgb(12 0 48 / 0.3),
+      inset 0 2px 0 rgb(255 255 255 / 0.4);
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-shadow: 0 2px 0 rgb(0 0 0 / 0.25);
+    transition:
+      transform 80ms ease-out,
+      box-shadow 80ms ease-out,
+      filter 120ms ease-out;
+  }
+  .btn3d:hover:not(:disabled) {
+    filter: brightness(1.07);
+  }
+  .btn3d:active:not(:disabled),
+  button:active:not(:disabled) > .btn3d {
+    transform: translateY(4px);
+    box-shadow:
+      0 1px 0 var(--lip),
+      0 3px 6px rgb(12 0 48 / 0.25),
+      inset 0 2px 0 rgb(255 255 255 / 0.3);
+  }
+  .btn3d:disabled {
+    filter: saturate(0.2) brightness(0.92);
+    opacity: 0.7;
+  }
+  .btn-gold {
+    --face: var(--gold);
+    --lip: var(--gold-lip);
+    --btn-ink: var(--gold-ink);
+    text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
+  }
+  .btn-blue {
+    --face: var(--blue);
+    --lip: var(--blue-lip);
+  }
+  .btn-green {
+    --face: var(--green);
+    --lip: var(--green-lip);
+  }
+  .btn-red {
+    --face: var(--red);
+    --lip: var(--red-lip);
+  }
+  .btn-violet {
+    --face: var(--violet);
+    --lip: var(--violet-lip);
+  }
+  .btn-cream {
+    --face: var(--surface);
+    --lip: var(--panel-lip);
+    --btn-ink: var(--p-ink);
+    border-color: var(--panel-edge);
+    background-image: linear-gradient(180deg, var(--p-sheen), transparent 50%);
+    text-shadow: none;
+  }
+
+  .btn-ghost {
+    color: inherit;
+    font-family: var(--font-display);
+    font-weight: 700;
+    border-radius: 16px;
+    transition:
+      background-color 120ms,
+      transform 80ms;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--chip);
+  }
+  .btn-ghost:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Round icon button (back, quit, close). Works on the arena and inside panels. */
+  .btn-round {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--chip);
+    border: 2px solid var(--line);
+    color: var(--ink);
+    font-size: 1.125rem;
+    font-weight: 800;
+    box-shadow: 0 3px 0 rgb(0 0 0 / 0.22);
+    transition: transform 80ms ease-out;
+  }
+  .btn-round:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.22);
+  }
+
+  /* Answer tile. */
+  .tile {
+    --face: var(--surface);
+    --edge: var(--panel-edge);
+    --lip: var(--panel-lip);
+    background-color: var(--face);
+    background-image: linear-gradient(180deg, var(--p-sheen), transparent 45%);
+    border: 2px solid var(--edge);
+    border-radius: 18px;
+    box-shadow:
+      0 4px 0 var(--lip),
+      0 8px 14px rgb(12 0 48 / 0.22);
+    transition:
+      transform 80ms ease-out,
+      box-shadow 80ms ease-out;
+  }
+  .tile:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow:
+      0 1px 0 var(--lip),
+      0 3px 6px rgb(12 0 48 / 0.2);
+  }
+  .tile-picked {
+    --face: color-mix(in srgb, var(--blue) 20%, var(--surface));
+    --edge: var(--blue);
+    --lip: var(--blue-lip);
+  }
+  .tile-ok,
+  .tile-bad {
+    color: #ffffff;
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.25), transparent 50%);
+    text-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+  }
+  .tile-ok {
+    --face: var(--green);
+    --edge: var(--green-lip);
+    --lip: var(--green-lip);
+  }
+  .tile-bad {
+    --face: var(--red);
+    --edge: var(--red-lip);
+    --lip: var(--red-lip);
+  }
+
+  /* Currency / stat counter in the HUD. */
+  .hud-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 36px;
+    padding: 0 0.8rem 0 0.3rem;
+    border-radius: 999px;
+    background: rgb(14 3 56 / 0.62);
+    border: 2px solid rgb(255 255 255 / 0.18);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.08);
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
+  }
+
+  /* Progress bar: dark trough, glossy fill. */
+  .bar {
+    height: 12px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgb(10 2 40 / 0.35);
+    box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.3);
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0) 60%);
+    box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.15);
+    transition: width 0.5s ease-out;
+  }
+
+  /* Question progress: one pip per question; wrong ones are striped, not just red. */
+  .pip {
+    height: 10px;
+    min-width: 6px;
+    flex: 1;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.18);
+  }
+  .pip-ok {
+    background: var(--green);
+    box-shadow: inset 0 -2px 0 var(--green-lip);
+  }
+  .pip-bad {
+    background: repeating-linear-gradient(135deg, var(--red) 0 4px, var(--red-lip) 4px 8px);
+  }
+  .pip-now {
+    background: #ffffff;
+    box-shadow: 0 0 10px rgb(255 255 255 / 0.7);
+  }
+
+  .field-input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0 1rem;
+    border-radius: 16px;
+    border: 2px solid var(--panel-edge);
+    background: var(--surface);
+    color: var(--p-ink);
+    font-size: 1rem;
+    box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.06);
+    transition:
+      border-color 120ms,
+      box-shadow 120ms;
+  }
+  .field-input::placeholder {
+    color: var(--p-muted);
+  }
+  .field-input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow:
+      inset 0 3px 0 rgb(0 0 0 / 0.06),
+      0 0 0 3px rgb(47 140 255 / 0.4);
+  }
+
+  /* Banner with notched ends; the wrapper draws the 3D edge under the clipped shape. */
+  .ribbon-wrap {
+    display: inline-block;
+    max-width: 100%;
+    filter: drop-shadow(0 4px 0 var(--rib-lip, var(--pink-lip))) drop-shadow(0 8px 10px rgb(0 0 0 / 0.25));
+  }
+  .ribbon {
+    padding: 0.35rem 1.75rem 0.45rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--rib, var(--pink)) 75%, white), var(--rib, var(--pink)) 60%);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+    color: var(--rib-ink, #ffffff);
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-align: center;
+    text-shadow: 0 2px 0 rgb(0 0 0 / 0.28);
+  }
+
+  /* Outlined display text, for big numbers and titles over busy backgrounds. */
+  .text-outline {
+    --o: #1a0752;
+    text-shadow:
+      2px 0 0 var(--o),
+      -2px 0 0 var(--o),
+      0 2px 0 var(--o),
+      0 -2px 0 var(--o),
+      1.5px 1.5px 0 var(--o),
+      -1.5px 1.5px 0 var(--o),
+      1.5px -1.5px 0 var(--o),
+      -1.5px -1.5px 0 var(--o),
+      0 5px 0 var(--o);
+  }
+  .text-outline-sm {
+    text-shadow:
+      0 2px 0 rgb(0 0 0 / 0.35),
+      0 0 2px rgb(0 0 0 / 0.4);
+  }
+
+  /* Diagonal light sweep across a hero button. */
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: 0;
+    width: 28%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.5), transparent);
+    transform: translateX(-150%) skewX(-18deg);
+    animation: shine 3.4s ease-in-out 1.2s infinite;
+    pointer-events: none;
+  }
+
+  /* Slowly turning light rays behind a reward. */
+  .rays {
+    position: absolute;
+    inset: -45%;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, rgb(255 230 120 / 0.28) 0 9deg, transparent 9deg 24deg);
+    -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent);
+    mask-image: radial-gradient(closest-side, #000 25%, transparent);
+    animation: spin 16s linear infinite;
+    pointer-events: none;
+  }
 }
 
 .safe-top {
@@ -155,6 +608,29 @@ textarea {
     opacity: 1;
   }
 }
+@keyframes drop-in {
+  from {
+    transform: translateY(-14px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes slam {
+  0% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.96);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 @keyframes shake {
   10%,
   90% {
@@ -176,10 +652,14 @@ textarea {
 }
 @keyframes pulse-ok {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+    box-shadow:
+      0 4px 0 var(--lip),
+      0 0 0 0 color-mix(in srgb, var(--green) 70%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 14px transparent;
+    box-shadow:
+      0 4px 0 var(--lip),
+      0 0 0 16px transparent;
   }
 }
 @keyframes float-up {
@@ -213,6 +693,14 @@ textarea {
   100% {
     transform: translateY(0) rotate(360deg);
     opacity: 1;
+  }
+}
+@keyframes coin-spin {
+  from {
+    transform: perspective(200px) rotateY(0deg);
+  }
+  to {
+    transform: perspective(200px) rotateY(360deg);
   }
 }
 @keyframes burst {
@@ -256,6 +744,58 @@ textarea {
     transform: scaleY(1);
   }
 }
+@keyframes bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+@keyframes star-pop {
+  0% {
+    transform: scale(0) rotate(-40deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.25) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+@keyframes urgent {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+@keyframes glow {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+@keyframes shine {
+  0%,
+  55% {
+    transform: translateX(-150%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(480%) skewX(-18deg);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .anim-pop {
   animation: pop-in 0.22s ease-out both;
@@ -263,11 +803,29 @@ textarea {
 .anim-rise {
   animation: rise 0.3s ease-out both;
 }
+.anim-drop {
+  animation: drop-in 0.2s ease-out both;
+}
+.anim-slam {
+  animation: slam 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
 .anim-shake {
   animation: shake 0.4s both;
 }
 .anim-pulse-ok {
   animation: pulse-ok 0.7s ease-out;
+}
+.anim-bob {
+  animation: bob 1.6s ease-in-out infinite alternate;
+}
+.anim-urgent {
+  animation: urgent 0.5s ease-in-out infinite alternate;
+}
+.anim-glow {
+  animation: glow 1.4s ease-in-out infinite alternate;
+}
+.anim-coin-spin {
+  animation: coin-spin 1.1s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

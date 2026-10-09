@@ -7,6 +7,11 @@ import '@fontsource/noto-sans-tamil/tamil-700.css';
 import '@fontsource/noto-sans-tamil/latin-400.css';
 import '@fontsource/noto-sans-tamil/latin-600.css';
 import '@fontsource/noto-sans-tamil/latin-700.css';
+// Display face for titles, buttons and HUD numbers (rounded, Tamil + Latin).
+import '@fontsource/baloo-thambi-2/tamil-700.css';
+import '@fontsource/baloo-thambi-2/tamil-800.css';
+import '@fontsource/baloo-thambi-2/latin-700.css';
+import '@fontsource/baloo-thambi-2/latin-800.css';
 import './index.css';
 import App from './App';
 import { captureInstallPrompt } from './lib/platform';

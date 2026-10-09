@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { isDemo, sb } from '../lib/supabase';
 import { Link } from '../lib/router';
-import { Button, Field, cx, inputClass } from '../components/ui';
+import { Button, Field, Ribbon, cx, inputClass } from '../components/ui';
 
 const USERNAME = /^[a-z0-9_]{3,20}$/;
 
@@ -34,13 +34,18 @@ export default function Welcome() {
 
   if (!chosen || isDemo) {
     return (
-      <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-6 px-6 text-center">
-        <img src="/logo.svg" alt="" width={96} height={96} className="anim-pop rounded-3xl shadow-card" />
-        <div>
-          <h1 className="text-2xl font-black">குரூப் 4 வினாடி வினா</h1>
-          <p className="text-muted">Group 4 Quiz Battle</p>
+      <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-7 px-6 text-center">
+        <div className="relative">
+          <span className="rays" aria-hidden />
+          <img src="/logo.svg" alt="" width={120} height={120} className="anim-bob relative rounded-[30px] shadow-[0_8px_0_rgb(0_0_0/0.3)]" />
         </div>
-        <p className="font-semibold">மொழியைத் தேர்ந்தெடுக்கவும் · Choose your language</p>
+        <div>
+          <h1 className="text-outline text-4xl font-extrabold leading-tight">குரூப் 4 வினாடி வினா</h1>
+          <Ribbon color="gold" className="mt-4">
+            Group 4 Quiz Battle
+          </Ribbon>
+        </div>
+        <p className="glass px-4 py-2 font-semibold">மொழியைத் தேர்ந்தெடுக்கவும் · Choose your language</p>
         <div className="grid w-full grid-cols-2 gap-3">
           <Button size="lg" variant={lang === 'ta' ? 'primary' : 'secondary'} onClick={() => setLang('ta')}>
             தமிழ்
@@ -130,22 +135,22 @@ export default function Welcome() {
   const canSignIn = login.trim().length >= 3 && password.length > 0;
 
   return (
-    <div className="safe-top mx-auto flex min-h-dvh max-w-md flex-col px-6 pb-8">
+    <div className="safe-top mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-8">
       <div className="flex justify-end pt-3">
-        <button className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold" onClick={() => setLang(lang === 'ta' ? 'en' : 'ta')}>
-          {lang === 'ta' ? 'English' : 'தமிழ்'}
+        <button className="btn-round !w-auto px-4 font-display text-sm" onClick={() => setLang(lang === 'ta' ? 'en' : 'ta')}>
+          🌐 {lang === 'ta' ? 'English' : 'தமிழ்'}
         </button>
       </div>
-      <div className="mt-4 flex flex-col items-center text-center">
-        <img src="/logo.svg" alt="" width={72} height={72} className="rounded-3xl shadow-card" />
-        <h1 className="mt-3 text-2xl font-black">{t('app.name')}</h1>
-        <p className="text-muted">{t('app.tagline')}</p>
+      <div className="mt-1 flex flex-col items-center text-center">
+        <img src="/logo.svg" alt="" width={84} height={84} className="anim-bob rounded-3xl shadow-[0_6px_0_rgb(0_0_0/0.3)]" />
+        <h1 className="text-outline mt-4 text-3xl font-extrabold leading-tight">{t('app.name')}</h1>
+        <p className="mt-2 font-semibold text-muted">{t('app.tagline')}</p>
       </div>
       {mode === 'signup' && (
         <ul className="mt-5 space-y-2">
           {(['welcome.p1', 'welcome.p2', 'welcome.p3'] as const).map((k, i) => (
-            <li key={k} className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card">
-              <span className="text-2xl" aria-hidden>
+            <li key={k} className="glass anim-rise flex items-center gap-3 p-2.5" style={{ animationDelay: `${i * 0.08}s` }}>
+              <span className={cx('btn3d grid h-11 w-11 shrink-0 place-items-center !rounded-xl text-2xl', ['btn-gold', 'btn-red', 'btn-blue'][i])} aria-hidden>
                 {['🪙', '⚔️', '📚'][i]}
               </span>
               <span className="font-semibold">{t(k)}</span>
@@ -154,14 +159,14 @@ export default function Welcome() {
         </ul>
       )}
 
-      <div className="mt-auto space-y-3 pt-6">
-        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-surface-2 p-1" role="tablist">
+      <div className="panel mt-auto space-y-3 p-4">
+        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-chip p-1" role="tablist">
           {(['signup', 'signin'] as const).map((m) => (
             <button
               key={m}
               role="tab"
               aria-selected={mode === m}
-              className={cx('min-h-11 rounded-xl px-2 text-sm font-bold', mode === m ? 'bg-surface text-brand shadow-card' : 'text-muted')}
+              className={cx('min-h-11 rounded-xl px-2 font-display text-sm font-bold', mode === m ? 'btn3d !rounded-xl' : 'text-muted')}
               onClick={() => {
                 setMode(m);
                 setError('');
@@ -242,9 +247,11 @@ export default function Welcome() {
             </>
           )}
         </form>
-        {error && <p className="text-sm font-semibold text-bad">{error}</p>}
+        {error && <p className="text-sm font-semibold text-bad">⚠️ {error}</p>}
         {info && <p className="rounded-2xl bg-accent-bg p-3 text-sm">{info}</p>}
-        <p className="pt-2 text-center text-xs text-muted">{t('welcome.free')}</p>
+      </div>
+      <div className="space-y-1 pt-4">
+        <p className="text-center text-xs text-muted">{t('welcome.free')}</p>
         <p className="text-center text-xs text-muted">
           {t('welcome.legal')}{' '}
           <Link to="/terms" className="underline">

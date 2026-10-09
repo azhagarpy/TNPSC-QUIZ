@@ -5,7 +5,7 @@ import { useRouter } from '../lib/router';
 import { useSession } from '../lib/session';
 import { isDemo } from '../lib/supabase';
 import { track } from '../lib/telemetry';
-import { Avatar, Button, ErrorBox, Screen } from '../components/ui';
+import { Avatar, Button, Coin, ErrorBox, Screen } from '../components/ui';
 
 const BOT_OFFER_S = 30;
 
@@ -62,26 +62,47 @@ export default function QuickMatch() {
       {error ? (
         <ErrorBox text={error} onRetry={() => navigate('/', { replace: true })} />
       ) : (
-        <div className="flex flex-col items-center gap-6 pt-6 text-center">
-          <div className="relative grid h-48 w-48 place-items-center">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="absolute inset-0 rounded-full border-4 border-accent/40"
-                style={{ animation: `radar 2.4s ease-out ${i * 0.8}s infinite` }}
-                aria-hidden
-              />
-            ))}
-            <Avatar avatar={profile?.avatar ?? 'a1'} frame={profile?.frame} size={88} />
+        <div className="flex flex-col items-center gap-6 pt-4 text-center">
+          {/* Versus card: you, with a radar sweep, against a mystery opponent */}
+          <div className="stage flex w-full items-center justify-around px-2 py-6">
+            <div className="flex w-28 flex-col items-center gap-2">
+              <div className="relative grid h-28 w-28 place-items-center">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="absolute inset-0 rounded-full border-4 border-[var(--blue)]/60"
+                    style={{ animation: `radar 2.4s ease-out ${i * 0.8}s infinite` }}
+                    aria-hidden
+                  />
+                ))}
+                <Avatar avatar={profile?.avatar ?? 'a1'} frame={profile?.frame} size={76} />
+              </div>
+              <span className="w-full truncate font-display font-bold">{profile?.display_name}</span>
+            </div>
+            <span className="text-outline anim-slam font-display text-5xl font-extrabold text-gold" aria-hidden>
+              VS
+            </span>
+            <div className="flex w-28 flex-col items-center gap-2">
+              <div className="grid h-28 w-28 place-items-center">
+                <span className="anim-glow grid h-[76px] w-[76px] place-items-center rounded-full border-4 border-dashed border-white/60 bg-white/10 font-display text-4xl font-extrabold" aria-hidden>
+                  ?
+                </span>
+              </div>
+              <span className="font-display font-bold text-muted" aria-hidden>
+                ? ? ?
+              </span>
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-bold">{t('quick.searching')}</p>
-            <p className="text-3xl font-black tabular-nums">{waited}s</p>
-            <p className="text-sm text-muted">{t('quick.entry')}</p>
-            {searching > 1 && <p className="text-sm text-ok">{t('quick.online', { n: searching })}</p>}
+          <div className="space-y-2">
+            <p className="text-outline-sm font-display text-lg font-bold">{t('quick.searching')}</p>
+            <p className="text-outline font-display text-5xl font-extrabold tabular-nums">{waited}s</p>
+            <p className="hud-pill !px-3 py-1.5 text-sm !leading-snug">
+              <Coin size={20} /> {t('quick.entry')}
+            </p>
+            {searching > 1 && <p className="text-sm font-bold text-ok">🟢 {t('quick.online', { n: searching })}</p>}
           </div>
           {waited >= BOT_OFFER_S && (
-            <div className="anim-rise w-full space-y-2 rounded-3xl bg-surface p-4 shadow-card">
+            <div className="panel anim-rise w-full space-y-3 p-4">
               <p className="text-sm">{t('quick.nobody')}</p>
               <Button
                 block

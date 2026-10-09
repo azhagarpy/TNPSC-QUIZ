@@ -8,7 +8,7 @@ import type { DailyBoard, SoloSummary } from '../lib/types';
 import { districtName } from '../lib/units';
 import { SoloResult } from '../components/SoloResult';
 import { SoloRunner } from '../components/SoloRunner';
-import { Avatar, Button, Card, Empty, ErrorBox, Loading, Screen, Segmented, cx } from '../components/ui';
+import { Avatar, Button, Card, Empty, ErrorBox, Loading, RankBadge, Screen, Segmented } from '../components/ui';
 
 export function DailyBoardView() {
   const { t, lang, errorText } = useI18n();
@@ -31,7 +31,7 @@ export function DailyBoardView() {
 
   return (
     <section className="space-y-3">
-      <h2 className="font-bold">🏆 {t('daily.board')}</h2>
+      <h2 className="text-outline-sm text-xl font-extrabold">🏆 {t('daily.board')}</h2>
       <Segmented
         small
         value={scope}
@@ -48,20 +48,20 @@ export function DailyBoardView() {
       {board && board.top.length > 0 && (
         <ol className="space-y-2">
           {board.top.map((r) => (
-            <li key={r.user.id} className="flex items-center gap-3 rounded-2xl bg-surface p-2 shadow-card">
-              <span className={cx('w-8 text-center font-black', r.rank <= 3 && 'text-brand')}>{r.rank}</span>
+            <li key={r.user.id} className="panel flex items-center gap-3 p-2 pr-3">
+              <RankBadge rank={r.rank} />
               <Avatar avatar={r.user.avatar} frame={r.user.frame} size={36} />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{r.user.name}</p>
+                <p className="truncate font-display font-bold">{r.user.name}</p>
                 <p className="truncate text-xs text-muted">{districtName(r.user.district, lang)}</p>
               </div>
-              <span className="font-bold tabular-nums">{r.score}</span>
+              <span className="font-display text-lg font-extrabold tabular-nums">{r.score}</span>
             </li>
           ))}
         </ol>
       )}
       {board?.me && (
-        <p className="text-center text-sm font-semibold">
+        <p className="glass py-2 text-center font-display font-bold">
           {t('lb.you')}: #{board.me.rank} · {board.me.score}
         </p>
       )}
@@ -112,12 +112,15 @@ export default function Daily() {
         {result ? (
           <SoloResult summary={result} onHome={() => navigate('/', { replace: true })} />
         ) : (
-          <Card>
+          <Card className="text-center">
+            <span className="btn3d mx-auto -mt-1 mb-3 grid h-16 w-16 place-items-center !rounded-2xl text-4xl" aria-hidden>
+              🗓️
+            </span>
             <p className="text-sm">{t('daily.rules')}</p>
             {daily?.finished ? (
-              <p className="mt-3 font-bold text-ok">✓ {t('home.dailyDone', { score: daily.score ?? 0 })}</p>
+              <p className="mt-3 font-display text-lg font-bold text-ok">✓ {t('home.dailyDone', { score: daily.score ?? 0 })}</p>
             ) : (
-              <Button block size="lg" className="mt-4" loading={busy} onClick={start}>
+              <Button block size="lg" variant="gold" className="shine mt-4" loading={busy} onClick={start}>
                 ▶ {t('daily.start')}
               </Button>
             )}

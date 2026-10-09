@@ -27,7 +27,7 @@ export function ReactionBar({ onReact, disabled }: { onReact: (e: string) => voi
           key={e}
           disabled={disabled}
           onClick={() => onReact(e)}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface-2 text-2xl transition active:scale-90 disabled:opacity-40"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-line bg-chip text-2xl shadow-[0_3px_0_rgb(0_0_0/0.2)] transition active:translate-y-0.5 active:scale-95 disabled:opacity-40"
         >
           {e}
         </button>
@@ -41,7 +41,7 @@ export function PhraseBar({ onPhrase }: { onPhrase: (id: string) => void }) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
       {PHRASES.map((p) => (
-        <button key={p} onClick={() => onPhrase(p)} className="min-h-10 shrink-0 rounded-full border border-line bg-surface px-3 text-sm font-semibold">
+        <button key={p} onClick={() => onPhrase(p)} className="min-h-11 shrink-0 rounded-full border-2 border-line bg-chip px-3.5 font-display text-sm font-bold shadow-[0_3px_0_rgb(0_0_0/0.2)] transition active:translate-y-0.5">
           {t(`phrase.${p}`)}
         </button>
       ))}
@@ -86,7 +86,7 @@ export function ChatLog({ items, me, roomId }: { items: ChatItem[]; me: string; 
   }, [visible.length]);
 
   return (
-    <div className="flex max-h-60 min-h-24 flex-col gap-2 overflow-y-auto rounded-2xl bg-surface-2 p-3" aria-live="polite">
+    <div className="panel flex max-h-60 min-h-24 flex-col gap-2 overflow-y-auto p-3" aria-live="polite">
       {visible.length === 0 && <p className="m-auto text-sm text-muted">{t('chat.empty')}</p>}
       {visible.map((m) => (
         <div key={m.key} className={cx('flex items-end gap-2', m.userId === me && 'flex-row-reverse')}>
@@ -95,7 +95,7 @@ export function ChatLog({ items, me, roomId }: { items: ChatItem[]; me: string; 
             onClick={() => m.userId !== me && setMenu(m)}
             className={cx(
               'tamil-wrap max-w-[75%] rounded-2xl px-3 py-2 text-left text-sm',
-              m.userId === me ? 'bg-brand text-brand-ink' : 'bg-surface',
+              m.userId === me ? 'bg-brand text-brand-ink' : 'bg-chip',
               m.kind === 'phrase' && 'italic',
             )}
           >

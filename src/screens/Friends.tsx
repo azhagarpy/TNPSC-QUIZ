@@ -91,15 +91,15 @@ export default function Friends() {
               <ul className="space-y-2">
                 {data.friends.map((f) => (
                   <li key={f.id}>
-                    <button className="flex w-full items-center gap-3 rounded-2xl bg-surface p-2 text-left shadow-card" onClick={() => setSelected(f)}>
+                    <button className="panel flex w-full items-center gap-3 p-2 pr-3 text-left transition-transform active:translate-y-1" onClick={() => setSelected(f)}>
                       <Avatar avatar={f.avatar} frame={f.frame} size={44} ring={f.online ? 'var(--ok)' : undefined} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-bold">{f.name}</p>
+                        <p className="truncate font-display font-bold">{f.name}</p>
                         <p className="truncate text-xs text-muted">
                           @{f.username} · {t('common.level', { n: f.level })} · {t('home.weekXp', { xp: f.week_xp })}
                         </p>
                       </div>
-                      {f.unread > 0 && <span className="grid h-6 min-w-6 place-items-center rounded-full bg-brand px-1.5 text-xs font-bold text-brand-ink">{f.unread}</span>}
+                      {f.unread > 0 && <span className="grid h-7 min-w-7 place-items-center rounded-full border-2 border-white bg-red px-1.5 font-display text-sm font-bold text-white">{f.unread}</span>}
                       <span className="text-xs font-semibold text-ok">{f.online ? `● ${t('friends.online')}` : ''}</span>
                     </button>
                   </li>
@@ -110,7 +110,7 @@ export default function Friends() {
               href={whatsappUrl(`${t('friends.inviteText', { username: profile?.username ?? '' })} ${inviteLink}`)}
               target="_blank"
               rel="noopener"
-              className="flex min-h-12 items-center justify-center rounded-2xl bg-[#25D366] font-semibold text-white"
+              className="btn3d btn-green flex min-h-12 items-center justify-center px-3"
             >
               {t('friends.inviteWa')}
             </a>
@@ -121,7 +121,7 @@ export default function Friends() {
           <div className="space-y-4">
             {data.incoming.length === 0 && data.outgoing.length === 0 && <Empty icon="📭">{t('friends.noRequests')}</Empty>}
             {data.incoming.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 rounded-2xl bg-surface p-2 shadow-card">
+              <div key={u.id} className="panel flex items-center gap-3 p-2">
                 <Avatar avatar={u.avatar} frame={u.frame} size={40} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold">{u.name}</p>
@@ -135,7 +135,7 @@ export default function Friends() {
                 </Button>
               </div>
             ))}
-            {data.outgoing.length > 0 && <h3 className="text-sm font-bold text-muted">{t('friends.outgoing')}</h3>}
+            {data.outgoing.length > 0 && <h3 className="font-display text-sm font-bold text-muted">{t('friends.outgoing')}</h3>}
             {data.outgoing.map((u) => (
               <div key={u.id} className="flex items-center gap-3 px-2">
                 <Avatar avatar={u.avatar} frame={u.frame} size={32} />
@@ -143,7 +143,7 @@ export default function Friends() {
                 <span className="text-xs text-muted">{t('friends.requested')}</span>
               </div>
             ))}
-            {data.blocked.length > 0 && <h3 className="text-sm font-bold text-muted">{t('friends.blocked')}</h3>}
+            {data.blocked.length > 0 && <h3 className="font-display text-sm font-bold text-muted">{t('friends.blocked')}</h3>}
             {data.blocked.map((u) => (
               <div key={u.id} className="flex items-center gap-3 px-2">
                 <Avatar avatar={u.avatar} frame={u.frame} size={32} dim />
@@ -161,7 +161,7 @@ export default function Friends() {
             <input className={inputClass} placeholder={t('friends.search')} value={q} onChange={(e) => setQ(e.target.value)} autoCapitalize="none" />
             <ul className="space-y-2">
               {results.map((u) => (
-                <li key={u.id} className="flex items-center gap-3 rounded-2xl bg-surface p-2 shadow-card">
+                <li key={u.id} className="panel flex items-center gap-3 p-2">
                   <Avatar avatar={u.avatar} frame={u.frame} size={40} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold">{u.name}</p>

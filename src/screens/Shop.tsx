@@ -67,7 +67,7 @@ export default function Shop() {
   return (
     <Screen title={t('shop.title')} back="/profile" right={cat && <CoinChip value={cat.balance} className="mr-2" />}>
       <div className="space-y-4">
-        <p className="rounded-2xl bg-surface-2 p-3 text-xs text-muted">{t('shop.note')}</p>
+        <p className="glass p-3 text-xs text-muted">🪙 {t('shop.note')}</p>
         <Segmented
           small
           value={kind}
@@ -83,12 +83,19 @@ export default function Shop() {
               .map((i) => {
                 const locked = cat.level < i.min_level;
                 return (
-                  <div key={i.key} className={cx('flex flex-col items-center rounded-3xl border-2 bg-surface p-3 text-center', equipped(i) ? 'border-accent' : 'border-line')}>
-                    <Preview item={i} avatar={profile?.avatar ?? 'a1'} />
-                    <p className="mt-2 text-sm font-bold">{name(i)}</p>
-                    {i.kind === 'emoji_pack' && <p className="text-[11px] text-muted">{t('shop.packHint')}</p>}
-                    {i.kind === 'theme' && <p className="text-[11px] text-muted">{t('shop.themeHint')}</p>}
-                    <div className="mt-2 w-full">
+                  <div key={i.key} className={cx('panel relative flex flex-col items-center p-3 text-center', equipped(i) && '!border-[var(--blue)]')}>
+                    {equipped(i) && (
+                      <span className="absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full border-2 border-white bg-blue font-bold text-white shadow-[0_2px_0_var(--blue-lip)]" aria-hidden>
+                        ✓
+                      </span>
+                    )}
+                    <div className="grid min-h-20 w-full place-items-center rounded-2xl bg-[radial-gradient(circle,rgb(255_198_41/0.35),transparent_70%)] py-1">
+                      <Preview item={i} avatar={profile?.avatar ?? 'a1'} />
+                    </div>
+                    <p className="mt-2 font-display font-bold leading-tight">{name(i)}</p>
+                    {i.kind === 'emoji_pack' && <p className="text-xs text-muted">{t('shop.packHint')}</p>}
+                    {i.kind === 'theme' && <p className="text-xs text-muted">{t('shop.themeHint')}</p>}
+                    <div className="mt-auto w-full pt-2">
                       {!i.owned ? (
                         <Button
                           size="sm"

@@ -12,8 +12,8 @@ export function InstallPrompt() {
   useEffect(() => onInstallChange(() => setAvailable(canInstall())), []);
   if (!available || !prefs.finishedFirst || prefs.installDismissed) return null;
   return (
-    <div className="anim-rise rounded-3xl border border-accent/30 bg-accent-bg p-4">
-      <p className="font-bold">📲 {t('install.title')}</p>
+    <div className="panel anim-rise !border-[var(--blue)] p-4">
+      <p className="font-display text-lg font-bold">📲 {t('install.title')}</p>
       <p className="mt-1 text-sm">{isIos() ? t('install.ios') : t('install.body')}</p>
       <div className="mt-3 flex gap-2">
         {!isIos() && (

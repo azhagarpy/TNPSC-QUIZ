@@ -21,6 +21,7 @@
     "push:setup": "node scripts/push-setup.mjs"
   },
   "dependencies": {
+    "@fontsource/baloo-thambi-2": "^5.3.0",
     "@fontsource/noto-sans-tamil": "^5.3.0",
     "@react-three/fiber": "^9.8.1",
     "@sentry/browser": "^11.6.0",

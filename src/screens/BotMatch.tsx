@@ -9,7 +9,7 @@ import { track } from '../lib/telemetry';
 import type { QuestionPayload, SoloReveal, SoloSummary } from '../lib/types';
 import { SoloResult } from '../components/SoloResult';
 import { SoloRunner } from '../components/SoloRunner';
-import { Avatar, Card, ErrorBox, Loading, Screen, cx } from '../components/ui';
+import { Avatar, ErrorBox, Loading, Ribbon, Screen, cx } from '../components/ui';
 
 interface BotTurn {
   at: number; // local time the bot "answers"
@@ -89,22 +89,33 @@ export default function BotMatch() {
   };
 
   const botAnswered = current !== null && turns.current[current] && Date.now() >= turns.current[current].at;
+  const botFace = (
+    <span className="grid h-10 w-10 place-items-center rounded-full bg-violet text-2xl shadow-[inset_0_-3px_0_rgb(0_0_0/0.2)]" aria-label={t('bot.name')}>
+      🤖
+    </span>
+  );
+  // Scoreboard: you vs the bot; a tick shows when the bot has answered.
   const strip = (
-    <div className="flex items-center justify-around rounded-2xl bg-surface-2 p-2">
-      <div className="flex items-center gap-2">
-        <Avatar avatar={profile?.avatar ?? 'a1'} frame={profile?.frame} size={36} />
-        <span className="font-bold tabular-nums">{scores.me}</span>
-      </div>
-      <span className="text-xs font-semibold text-muted">{t('bot.noStakes')}</span>
-      <div className="flex items-center gap-2">
-        <span className="font-bold tabular-nums">{scores.bot}</span>
-        <span className="relative">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-accent-bg text-xl" aria-label={t('bot.name')}>
-            🤖
-          </span>
-          {botAnswered && <span className="anim-pop absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full bg-ok text-[10px] text-white">✓</span>}
+    <div>
+      <div className="glass flex items-center justify-between gap-2 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <Avatar avatar={profile?.avatar ?? 'a1'} frame={profile?.frame} size={40} />
+          <span className="text-outline-sm font-display text-2xl font-extrabold tabular-nums">{scores.me}</span>
+        </div>
+        <span className="font-display text-lg font-extrabold text-gold" aria-hidden>
+          VS
         </span>
+        <div className="flex items-center gap-2">
+          <span className="text-outline-sm font-display text-2xl font-extrabold tabular-nums">{scores.bot}</span>
+          <span className="relative">
+            {botFace}
+            {botAnswered && (
+              <span className="anim-pop absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-green text-xs font-bold text-white">✓</span>
+            )}
+          </span>
+        </div>
       </div>
+      <p className="mt-1 text-center text-xs font-semibold text-muted">{t('bot.noStakes')}</p>
     </div>
   );
 
@@ -113,13 +124,20 @@ export default function BotMatch() {
     return (
       <Screen title={t('bot.title')} back="/">
         <div className="space-y-4">
-          <Card className="text-center">
-            <p className="text-2xl font-black">{outcome === 'bot.youWin' ? '🎉 ' : '🤖 '}{t(outcome)}</p>
-            <p className="mt-1 text-lg font-bold tabular-nums">
-              {scores.me} : {scores.bot}
-            </p>
-            <p className="text-xs text-muted">{t('bot.noStakes')}</p>
-          </Card>
+          <div className="anim-pop text-center">
+            <Ribbon color={outcome === 'bot.youWin' ? 'gold' : outcome === 'bot.draw' ? 'blue' : 'violet'}>
+              {outcome === 'bot.youWin' ? '🎉 ' : '🤖 '}
+              {t(outcome)}
+            </Ribbon>
+            <div className="mt-4 flex items-center justify-center gap-4">
+              <Avatar avatar={profile?.avatar ?? 'a1'} frame={profile?.frame} size={48} />
+              <span className="text-outline font-display text-5xl font-extrabold tabular-nums">
+                {scores.me} : {scores.bot}
+              </span>
+              {botFace}
+            </div>
+            <p className="mt-2 text-xs text-muted">{t('bot.noStakes')}</p>
+          </div>
           <SoloResult summary={summary} onHome={() => navigate('/', { replace: true })} onPlayAgain={() => setRound((r) => r + 1)} />
         </div>
       </Screen>

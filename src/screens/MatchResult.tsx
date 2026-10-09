@@ -12,7 +12,7 @@ import { LevelUpOverlay, PodiumScene } from '../components/scenes';
 import { useRoomCosmetics } from '../lib/cosmeticsHook';
 import { levelTitle } from '../lib/levels';
 import { track } from '../lib/telemetry';
-import { Avatar, Button, Card, Coin, ErrorBox, Loading, Screen, cx, useToast } from '../components/ui';
+import { Avatar, Button, Card, Coin, ErrorBox, Loading, RankBadge, Ribbon, Screen, cx, useToast } from '../components/ui';
 import { useRoomChat } from './Lobby';
 
 // Screen 11: podium, pot split, rematch, chat.
@@ -123,37 +123,39 @@ export default function MatchResult({ params }: { params: Record<string, string>
       <div className="space-y-4">
         <PodiumScene entries={res.players.map((p) => ({ avatar: p.avatar, name: p.name ?? '', rank: p.rank ?? 4 }))} />
 
-        <Card className="anim-pop text-center">
+        <div className="anim-pop text-center">
           {res.status === 'refunded' ? (
-            <p className="text-lg font-bold">↩️ {t('mres.refunded')}</p>
+            <Ribbon color="blue">↩️ {t('mres.refunded')}</Ribbon>
           ) : mine.payout > 0 ? (
-            <p className="text-2xl font-black text-ok">🎉 {t('mres.won', { n: mine.payout })}</p>
+            <Ribbon color="gold">🎉 {t('mres.won', { n: mine.payout })}</Ribbon>
           ) : (
-            <p className="text-lg font-bold">{t('mres.lost')}</p>
+            <Ribbon color="violet">{t('mres.lost')}</Ribbon>
           )}
-          {res.stake > 0 && res.status === 'settled' && (
-            <p className={cx('mt-1 inline-flex items-center gap-1 font-bold tabular-nums', mine.net >= 0 ? 'text-ok' : 'text-bad')}>
-              <Coin /> {mine.net >= 0 ? '+' : ''}
-              {mine.net}
-            </p>
-          )}
-          <p className="text-sm text-muted">{t('result.xp', { n: mine.xp })}</p>
-        </Card>
+          <div className="mt-4 flex justify-center gap-3">
+            {res.stake > 0 && res.status === 'settled' && (
+              <span className={cx('btn3d inline-flex items-center gap-1.5 px-4 py-2 text-xl tabular-nums', mine.net >= 0 ? 'btn-gold' : 'btn-red')}>
+                <Coin size={24} /> {mine.net >= 0 ? '+' : ''}
+                {mine.net}
+              </span>
+            )}
+            <span className="btn3d btn-violet inline-flex items-center gap-1.5 px-4 py-2 text-xl">⚡ {t('result.xp', { n: mine.xp })}</span>
+          </div>
+        </div>
 
         <ol className="space-y-2">
           {res.players.map((p) => (
-            <li key={p.user_id} className={cx('flex items-center gap-3 rounded-2xl p-2 shadow-card', p.user_id === me ? 'bg-accent-bg' : 'bg-surface')}>
-              <span className="w-6 text-center text-lg font-black">{p.rank ?? '–'}</span>
-              <Avatar avatar={p.avatar} frame={frames[p.user_id]} size={40} />
+            <li key={p.user_id} className={cx('panel flex items-center gap-3 p-2 pr-3', p.user_id === me && '!border-[var(--blue)]')}>
+              <RankBadge rank={p.rank} />
+              <Avatar avatar={p.avatar} frame={frames[p.user_id]} size={42} />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-bold">{p.name}</p>
+                <p className="truncate font-display font-bold">{p.name}</p>
                 <p className="text-xs text-muted">
                   {t('mres.pts', { n: p.score })} · {p.correct}/{res.n} · 🔥{p.best_streak}
                 </p>
               </div>
               {p.payout > 0 && (
-                <span className="inline-flex items-center gap-1 font-bold">
-                  <Coin /> {p.payout}
+                <span className="hud-pill">
+                  <Coin size={22} /> {p.payout}
                 </span>
               )}
             </li>

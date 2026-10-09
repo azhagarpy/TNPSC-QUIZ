@@ -73,8 +73,8 @@ export default function Legal({ params }: { params: Record<string, string> }) {
   const sections = terms ? TERMS_EN : PRIVACY_EN;
   const summary = terms ? TERMS_TA : PRIVACY_TA;
   const tamilBlock = (
-    <section className="rounded-2xl bg-surface-2 p-4" lang="ta">
-      <h2 className="mb-2 font-bold">சுருக்கம்</h2>
+    <section className="panel p-4" lang="ta">
+      <h2 className="mb-2 text-lg font-bold">சுருக்கம்</h2>
       <ul className="list-disc space-y-1 pl-5 text-sm">
         {summary.map((s) => (
           <li key={s}>{s}</li>
@@ -87,12 +87,14 @@ export default function Legal({ params }: { params: Record<string, string> }) {
       <div className="space-y-4 pb-8">
         <p className="text-xs text-muted">Last updated {UPDATED}</p>
         {lang === 'ta' && tamilBlock}
-        {sections.map(([h, body]) => (
-          <section key={h} lang="en">
-            <h2 className="font-bold">{h}</h2>
-            <p className="text-sm">{body}</p>
-          </section>
-        ))}
+        <div className="panel space-y-4 p-4">
+          {sections.map(([h, body]) => (
+            <section key={h} lang="en">
+              <h2 className="text-lg font-bold">{h}</h2>
+              <p className="text-sm">{body}</p>
+            </section>
+          ))}
+        </div>
         {lang === 'en' && tamilBlock}
       </div>
     </Screen>
