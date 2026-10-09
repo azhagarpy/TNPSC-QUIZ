@@ -2,16 +2,20 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { isDemo, sb } from '../lib/supabase';
-import { Link } from '../lib/router';
+import { Link, useRouter } from '../lib/router';
 import { Button, Field, Ribbon, cx, inputClass } from '../components/ui';
 
 const USERNAME = /^[a-z0-9_]{3,20}$/;
 
 // Screens 1–2: language pick, then an account: register with username, email
-// and password; sign in again with username or email plus password.
+// and password; sign in again with username or email plus password. A
+// forgotten password is reset by an emailed link (see ResetPassword).
 export default function Welcome() {
   const { t, lang, setLang, chosen, errorText } = useI18n();
-  const [mode, setMode] = useState<'signin' | 'signup'>('signup');
+  const { state } = useRouter();
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>(() =>
+    (state as { forgot?: boolean } | null)?.forgot ? 'forgot' : 'signup',
+  );
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [login, setLogin] = useState('');
@@ -108,6 +112,31 @@ export default function Welcome() {
     }
   };
 
+  // Supabase answers the same whether or not the email has an account, so the
+  // message never reveals who is registered.
+  const sendReset = async () => {
+    setBusy(true);
+    setError('');
+    setInfo('');
+    try {
+      const mail = email.trim();
+      const { error } = await (await sb()).auth.resetPasswordForEmail(mail, { redirectTo: `${window.location.origin}/reset` });
+      if (error) setError(/security purposes|rate limit/i.test(error.message) ? t('welcome.resetWait') : error.message);
+      else setInfo(t('welcome.resetSent', { email: mail }));
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const switchMode = (m: typeof mode) => {
+    setMode(m);
+    setError('');
+    setInfo('');
+    if (m === 'forgot' && login.includes('@')) setEmail(login.trim());
+  };
+
   const passwordInput = (
     <Field label={t('welcome.password')} hint={mode === 'signup' ? t('welcome.passwordHint') : undefined}>
       <div className="relative">
@@ -160,31 +189,56 @@ export default function Welcome() {
       )}
 
       <div className="panel mt-auto space-y-3 p-4">
-        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-chip p-1" role="tablist">
-          {(['signup', 'signin'] as const).map((m) => (
-            <button
-              key={m}
-              role="tab"
-              aria-selected={mode === m}
-              className={cx('min-h-11 rounded-xl px-2 font-display text-sm font-bold', mode === m ? 'btn3d !rounded-xl' : 'text-muted')}
-              onClick={() => {
-                setMode(m);
-                setError('');
-                setInfo('');
-              }}
-            >
-              {m === 'signup' ? t('welcome.signup') : t('welcome.signin')}
-            </button>
-          ))}
-        </div>
+        {mode === 'forgot' ? (
+          <div>
+            <h2 className="text-xl font-extrabold">🔑 {t('welcome.resetTitle')}</h2>
+            <p className="mt-1 text-sm text-muted">{t('welcome.resetBody')}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-chip p-1" role="tablist">
+            {(['signup', 'signin'] as const).map((m) => (
+              <button
+                key={m}
+                role="tab"
+                aria-selected={mode === m}
+                className={cx('min-h-11 rounded-xl px-2 font-display text-sm font-bold', mode === m ? 'btn3d !rounded-xl' : 'text-muted')}
+                onClick={() => switchMode(m)}
+              >
+                {m === 'signup' ? t('welcome.signup') : t('welcome.signin')}
+              </button>
+            ))}
+          </div>
+        )}
         <form
           className="space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
-            void (mode === 'signup' ? signUp() : signIn());
+            void (mode === 'signup' ? signUp() : mode === 'signin' ? signIn() : sendReset());
           }}
         >
-          {mode === 'signup' ? (
+          {mode === 'forgot' ? (
+            <>
+              <Field label={t('welcome.emailLabel')}>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  inputMode="email"
+                  className={inputClass}
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Field>
+              <Button block size="lg" type="submit" loading={busy} disabled={!email.includes('@')}>
+                📧 {t('welcome.resetSend')}
+              </Button>
+              <Button block variant="ghost" type="button" onClick={() => switchMode('signin')}>
+                ‹ {t('welcome.backToSignin')}
+              </Button>
+              <p className="text-center text-xs text-muted">{t('welcome.forgot')}</p>
+            </>
+          ) : mode === 'signup' ? (
             <>
               <Field
                 label={t('onb.username')}
@@ -243,7 +297,9 @@ export default function Welcome() {
               <Button block size="lg" type="submit" loading={busy} disabled={!canSignIn}>
                 {t('welcome.signin')}
               </Button>
-              <p className="text-center text-xs text-muted">{t('welcome.forgot')}</p>
+              <button type="button" className="mx-auto block min-h-11 px-2 font-display font-bold text-accent underline" onClick={() => switchMode('forgot')}>
+                {t('welcome.forgotLink')}
+              </button>
             </>
           )}
         </form>

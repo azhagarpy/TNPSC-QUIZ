@@ -2,6 +2,7 @@ import { Component, Suspense, lazy, useEffect, type ComponentType, type ReactNod
 import { I18nProvider, useI18n } from './lib/i18n';
 import { RouterProvider, matchPath, useRouter } from './lib/router';
 import { SessionProvider, useSession } from './lib/session';
+import { isDemo } from './lib/supabase';
 import { Button, Loading, ToastProvider } from './components/ui';
 import { captureError, identify, track } from './lib/telemetry';
 import Home from './screens/Home';
@@ -33,13 +34,14 @@ const routes: [string, ComponentType<{ params: Record<string, string> }>][] = [
 const Onboarding = lazy(() => import('./screens/Onboarding'));
 const DemoQuiz = lazy(() => import('./screens/DemoQuiz'));
 const Legal = lazy(() => import('./screens/Legal'));
+const ResetPassword = lazy(() => import('./screens/ResetPassword'));
 const OfflineHome = lazy(() => import('./screens/OfflineHome'));
 
 const PENDING = 'g4.pendingPath';
 
 function Gate() {
   const { status, profile, summary, userId } = useSession();
-  const { path, navigate } = useRouter();
+  const { path, query, navigate } = useRouter();
   const { chosen } = useI18n();
 
   useEffect(() => identify(userId), [userId]);
@@ -63,6 +65,8 @@ function Gate() {
   }, [status, profile?.onboarded, profile?.signup_bonus_claimed, path, navigate]);
 
   if (path === '/terms' || path === '/privacy') return <Legal params={{ page: path.slice(1) }} />;
+  // The emailed reset link: lands on /reset, or on / if the Site URL fallback was used.
+  if (!isDemo && (path === '/reset' || query.get('type') === 'recovery')) return <ResetPassword />;
   if (!chosen) return <Welcome />; // language first: needs no network, paints immediately
   if (status === 'loading') return <Splash />;
   if (status === 'signedOut') return <Welcome />;

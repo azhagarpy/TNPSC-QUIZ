@@ -52,7 +52,7 @@ export function demoSummary(): HomeSummary {
     solo_coins_today: 0,
     solo_coin_cap: 300,
     week_xp: 0,
-    next_exam_date: '2026-12-20',
+    next_exam_date: '2027-01-10',
     stake_tiers: { '0': 1, '50': 1, '100': 1, '250': 3, '500': 5, '1000': 10 },
     four_player_level: 3,
     server_now: new Date().toISOString(),
