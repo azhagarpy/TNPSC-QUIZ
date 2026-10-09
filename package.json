@@ -1,0 +1,57 @@
+{
+  "name": "group4-quiz-battle",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Bilingual (Tamil + English) TNPSC Group 4 quiz game: solo practice, coin-staked friend rooms, chat. PWA on Supabase + Cloudflare Pages.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:db": "node scripts/test-db.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "seed": "node scripts/build-seed.mjs",
+    "icons": "pwa-assets-generator",
+    "check": "npm run typecheck && npm test && npm run test:db && npm run build && npm run smoke",
+    "setup-sql": "node scripts/build-setup-sql.mjs",
+    "db:apply": "node scripts/apply-db.mjs",
+    "e2e:live": "node scripts/e2e-live.mjs",
+    "push:setup": "node scripts/push-setup.mjs"
+  },
+  "dependencies": {
+    "@fontsource/noto-sans-tamil": "^5.3.0",
+    "@react-three/fiber": "^9.8.1",
+    "@sentry/browser": "^11.6.0",
+    "@supabase/supabase-js": "^2.117.3",
+    "idb-keyval": "^6.3.0",
+    "motion": "^14.0.0",
+    "posthog-js": "^1.438.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "@vite-pwa/assets-generator": "^2.0.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "pg": "^8.23.1",
+    "playwright-core": "^1.64.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.3",
+    "web-push": "^3.6.7",
+    "workbox-window": "^7.4.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,281 @@
+@import 'tailwindcss';
+
+:root {
+  --bg: #fff8ee;
+  --surface: #ffffff;
+  --surface-2: #fdf0e1;
+  --ink: #2a1e12;
+  --muted: #74624f;
+  --line: #ecdcc8;
+  --brand: #b0124f;
+  --brand-2: #8a0d3d;
+  --brand-ink: #ffffff;
+  --gold: #f2b705;
+  --gold-ink: #5c4300;
+  --ok: #157a46;
+  --ok-bg: #dff5e8;
+  --bad: #c2321f;
+  --bad-bg: #fde3df;
+  --accent: #5b34d6;
+  --accent-bg: #ece6ff;
+  --shadow: 0 1px 2px rgb(60 30 0 / 0.08), 0 4px 14px rgb(60 30 0 / 0.08);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #17121f;
+    --surface: #221a2e;
+    --surface-2: #2c2239;
+    --ink: #f6eee3;
+    --muted: #b8a99a;
+    --line: #3a2e4a;
+    --brand: #f0588f;
+    --brand-2: #ff7aa8;
+    --brand-ink: #1b0710;
+    --gold: #ffc933;
+    --gold-ink: #2b1f00;
+    --ok: #4ad38b;
+    --ok-bg: #143523;
+    --bad: #ff7a66;
+    --bad-bg: #3d1914;
+    --accent: #a891ff;
+    --accent-bg: #2a2150;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #17121f;
+  --surface: #221a2e;
+  --surface-2: #2c2239;
+  --ink: #f6eee3;
+  --muted: #b8a99a;
+  --line: #3a2e4a;
+  --brand: #f0588f;
+  --brand-2: #ff7aa8;
+  --brand-ink: #1b0710;
+  --gold: #ffc933;
+  --gold-ink: #2b1f00;
+  --ok: #4ad38b;
+  --ok-bg: #143523;
+  --bad: #ff7a66;
+  --bad-bg: #3d1914;
+  --accent: #a891ff;
+  --accent-bg: #2a2150;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-ink: var(--brand-ink);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-accent: var(--accent);
+  --color-accent-bg: var(--accent-bg);
+  --font-sans: 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --shadow-card: var(--shadow);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 12px);
+}
+
+.tamil-wrap {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Motion: transform and opacity only, so the GPU does the work. */
+@keyframes pop-in {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  80% {
+    transform: translateX(4px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-6px);
+  }
+  40%,
+  60% {
+    transform: translateX(6px);
+  }
+}
+@keyframes pulse-ok {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+@keyframes float-up {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(-10px) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes coin-drop {
+  0% {
+    transform: translateY(-120px) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(0) rotate(340deg);
+  }
+  90% {
+    transform: translateY(-6px) rotate(360deg);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+    opacity: 1;
+  }
+}
+@keyframes burst {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes radar {
+  0% {
+    transform: scale(0.45);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+@keyframes trophy-flip {
+  0% {
+    transform: perspective(400px) rotateY(0deg) scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: perspective(400px) rotateY(720deg) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(400px) rotateY(720deg) scale(1);
+  }
+}
+@keyframes grow-up {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.anim-pop {
+  animation: pop-in 0.22s ease-out both;
+}
+.anim-rise {
+  animation: rise 0.3s ease-out both;
+}
+.anim-shake {
+  animation: shake 0.4s both;
+}
+.anim-pulse-ok {
+  animation: pulse-ok 0.7s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

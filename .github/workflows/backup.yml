@@ -1,0 +1,51 @@
+name: Nightly database backup
+
+# The Supabase free plan has no automatic backups (plan: "Nightly dump to a
+# private GitHub repo"). Dumps are encrypted before they leave the runner.
+#
+# Secrets:
+#   SUPABASE_DB_URL     Session pooler connection string (Dashboard → Connect → Session pooler; IPv4)
+#   BACKUP_REPO         owner/name of a PRIVATE repo for dumps
+#   BACKUP_TOKEN        fine-grained token with contents:write on BACKUP_REPO only
+#   BACKUP_PASSPHRASE   long random passphrase; restore with: gpg -d file.gpg > file.sql
+
+on:
+  schedule:
+    - cron: '30 21 * * *' # 03:00 IST
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump roles, schema and data
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          npx -y supabase@latest db dump --db-url "$DB_URL" -f roles.sql --role-only
+          npx -y supabase@latest db dump --db-url "$DB_URL" -f schema.sql
+          npx -y supabase@latest db dump --db-url "$DB_URL" -f data.sql --use-copy --data-only
+      - name: Encrypt
+        env:
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          stamp=$(date -u +%Y-%m-%d)
+          mkdir -p out/$stamp
+          for f in roles schema data; do
+            gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$PASSPHRASE" -o out/$stamp/$f.sql.gpg $f.sql
+          done
+      - name: Push to the backup repo
+        env:
+          TOKEN: ${{ secrets.BACKUP_TOKEN }}
+          REPO: ${{ secrets.BACKUP_REPO }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.git" backups
+          cp -r out/* backups/
+          cd backups
+          # Keep the last 30 days.
+          ls -d 20*/ 2>/dev/null | sort | head -n -30 | xargs -r git rm -rq
+          git config user.name "backup-bot"
+          git config user.email "backup-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "Backup $(date -u +%Y-%m-%d)" || echo "nothing to commit"
+          git push
