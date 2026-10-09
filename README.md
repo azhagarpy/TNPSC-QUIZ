@@ -51,7 +51,7 @@ Never add `SUPABASE_DB_URL` or the secret key to Vercel; the app does not need t
 
 | Workflow | What it does | Secrets |
 | --- | --- | --- |
-| `ci.yml` | Typecheck, unit tests, database tests, build, UI smoke test, Lighthouse budget (fails if LCP > 2.5 s, interactive > 3 s or first-load JS > 170 KB) | none |
+| `ci.yml` | Typecheck, unit tests, database tests, build, UI smoke test, Lighthouse budget (fails if first-load JS > 170 KB; warns if LCP > 2.5 s or interactive > 3 s, since those timings depend on the CI machine) | none |
 | `backup.yml` | Nightly encrypted dump (roles, schema, data) pushed to a private repo, last 30 days kept | `SUPABASE_DB_URL`, `BACKUP_REPO`, `BACKUP_TOKEN`, `BACKUP_PASSPHRASE` |
 | `keepalive.yml` | Pings the API every 3 days so a quiet free project is not paused | `SUPABASE_URL`, `SUPABASE_ANON_KEY` |
 
